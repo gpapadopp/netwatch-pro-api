@@ -1,6 +1,7 @@
 def package_permissions_serializer(package_permission) -> dict:
     return {
         'id': str(package_permission['_id']),
+        'device_token': str(package_permission['device_token']),
         'package_name': str(package_permission['package_name']),
         'app_name': str(package_permission['app_name']),
         'permissions': list(package_permission['permissions']),

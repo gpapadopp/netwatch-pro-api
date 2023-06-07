@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class PackagePermissions(BaseModel):
+    device_token: str
     package_name: str
     app_name: str
     permissions: list
