@@ -6,7 +6,7 @@ from config.db import package_permissions_collection
 package_permission = APIRouter()
 
 
-@package_permission.post("/package-permissions/add", status_code=201)
+@package_permission.post("/api/v1/package-permissions/add", status_code=201)
 async def add_package_permission(package_permission_details: PackagePermissions):
     _id = package_permissions_collection.insert_one(dict(package_permission_details))
     package_permission_details = all_package_permissions_serializer(
