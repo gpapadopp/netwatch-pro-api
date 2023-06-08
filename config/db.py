@@ -5,3 +5,6 @@ db = db_connection.netwatch_pro_db
 
 # Package Permissions - Collection
 package_permissions_collection = db['package_permissions']
+
+# Package APKs - Collection
+package_apks_collection = db['package_apks']

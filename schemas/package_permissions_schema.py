@@ -12,5 +12,6 @@ def package_permissions_serializer(package_permission) -> dict:
         'created_at': str(package_permission['created_at'])
     }
 
+
 def all_package_permissions_serializer(package_permissions) -> list:
     return [package_permissions_serializer(package_permission) for package_permission in package_permissions]
