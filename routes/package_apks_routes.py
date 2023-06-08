@@ -1,5 +1,5 @@
-import aiofiles
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
+from typing import Annotated
 from models.package_apks_model import PackageApks
 from schemas.package_apks_schema import all_package_apks_serializer
 from config.db import package_apks_collection
@@ -10,9 +10,9 @@ package_apk = APIRouter()
 
 @package_apk.post("/api/v1/package-apks/add", status_code=201)
 async def add_package_apks(
-    device_token: str,
-    package_name: str,
-    app_name: str,
+    device_token: Annotated[str, Form()],
+    package_name: Annotated[str, Form()],
+    app_name: Annotated[str, Form()],
     apk_file: UploadFile = File(...)
 ):
     unique_filename = str(uuid.uuid4())
