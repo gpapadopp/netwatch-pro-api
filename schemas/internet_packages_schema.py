@@ -1,6 +1,7 @@
 def internet_packages_serializer(internet_package) -> dict:
     return {
         'id': str(internet_package['_id']),
+        'device_token': str(internet_package['device_token']),
         'source_ip': str(internet_package['source_ip']),
         'destination_ip': str(internet_package['destination_ip']),
         'source_mac_address': str(internet_package['source_mac_address']),
