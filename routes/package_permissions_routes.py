@@ -12,21 +12,21 @@ async def add_package_permission(
     device_token: Annotated[str, Form()],
     package_name: Annotated[str, Form()],
     app_name: Annotated[str, Form()],
-    permissions: Annotated[list, Form()],
-    certificate_subjects: Annotated[list, Form()],
-    certificate_issuers: Annotated[list, Form()],
-    certificate_serial_numbers: Annotated[list, Form()],
-    certificate_versions: Annotated[list, Form()]
+    permissions: Annotated[str, Form()],
+    certificate_subjects: Annotated[str, Form()],
+    certificate_issuers: Annotated[str, Form()],
+    certificate_serial_numbers: Annotated[str, Form()],
+    certificate_versions: Annotated[str, Form()]
 ):
     package_permission_model = PackagePermissions(
         device_token=device_token,
         package_name=package_name,
         app_name=app_name,
-        permissions=permissions,
-        certificate_subjects=certificate_subjects,
-        certificate_issuers=certificate_issuers,
-        certificate_serial_numbers=certificate_serial_numbers,
-        certificate_versions=certificate_versions
+        permissions=list(str(permissions).split(",")),
+        certificate_subjects=list(str(certificate_subjects).split(",")),
+        certificate_issuers=list(str(certificate_issuers).split(",")),
+        certificate_serial_numbers=list(str(certificate_serial_numbers).split(",")),
+        certificate_versions=list(str(certificate_versions).split(","))
     )
     _id = package_permissions_collection.insert_one(dict(package_permission_model))
     package_permission_details = all_package_permissions_serializer(
