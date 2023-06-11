@@ -8,3 +8,6 @@ package_permissions_collection = db['package_permissions']
 
 # Package APKs - Collection
 package_apks_collection = db['package_apks']
+
+#Intener Packages - Collection
+internet_packages_collection = db['internet_packages']
