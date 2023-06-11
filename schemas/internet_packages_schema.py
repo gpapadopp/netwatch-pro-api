@@ -3,8 +3,6 @@ def internet_packages_serializer(internet_package) -> dict:
         'id': str(internet_package['_id']),
         'source_ip': str(internet_package['source_ip']),
         'destination_ip': str(internet_package['destination_ip']),
-        'source_port': str(internet_package['source_port']),
-        'destination_port': str(internet_package['destination_port']),
         'source_mac_address': str(internet_package['source_mac_address']),
         'destination_mac_address': str(internet_package['destination_mac_address']),
         'header_type': str(internet_package['header_type']),
