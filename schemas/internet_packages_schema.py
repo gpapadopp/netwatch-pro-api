@@ -1,6 +1,3 @@
-from fastapi import File
-
-
 def internet_packages_serializer(internet_package) -> dict:
     return {
         'id': str(internet_package['_id']),

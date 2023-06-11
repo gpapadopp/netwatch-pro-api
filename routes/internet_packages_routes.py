@@ -1,9 +1,8 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, Form
 from typing import Annotated
 from models.internet_packages_model import InternetPackages
 from schemas.internet_packages_schema import all_internet_packages_serializer
 from config.db import internet_packages_collection
-import uuid
 
 internet_package = APIRouter()
 

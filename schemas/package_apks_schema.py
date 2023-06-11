@@ -1,6 +1,3 @@
-from fastapi import File
-
-
 def package_apks_serializer(package_permission) -> dict:
     return {
         'id': str(package_permission['_id']),
