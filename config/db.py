@@ -17,3 +17,6 @@ notifications_collection = db['notifications']
 
 # Access Tokens - Collection
 access_tokens_collection = db['access_tokens']
+
+# Users - Collection
+users_collection = db['users']

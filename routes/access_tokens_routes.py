@@ -28,10 +28,6 @@ async def add_access_token(
     generated_api_key = str(uuid.uuid4())
     generated_secret_key = str(uuid.uuid4()) + str(uuid.uuid4()) + str(uuid.uuid4()) + str(uuid.uuid4())
 
-    # return {
-    #     "ok": access_models
-    # }
-
     access_token_model = AccessTokensModel(
         issuer=issuer,
         purpose=purpose,
