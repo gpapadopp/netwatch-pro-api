@@ -1,8 +1,9 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, Header, Query
 from typing import Annotated
 from models.notifications_model import NotificationsModel
 from schemas.notifications_schema import all_notifications_serializer
 from config.db import notifications_collection
+import utils.users_auth
 import uuid
 from bson import ObjectId
 from fastapi.responses import FileResponse
@@ -12,11 +13,18 @@ notification_api = APIRouter()
 
 @notification_api.post("/api/v1/notifications/add", status_code=201)
 async def add_notification(
-        title: Annotated[str, Form()],
-        context: Annotated[str, Form()],
-        disabled: Annotated[bool, Form()],
-        banner: UploadFile = File(...),
+    title: Annotated[str, Form()],
+    context: Annotated[str, Form()],
+    disabled: Annotated[bool, Form()],
+    banner: UploadFile = File(...),
+    authorization: str = Header(..., description="Bearer Token")
 ):
+    if not utils.users_auth.check_login_token(authorization):
+        return {
+            "status": "error",
+            "message": "unauthorized"
+        }
+
     unique_filename = str(uuid.uuid4())
     banner_extension = banner.filename.split(".")[1]
     file_unique_name = unique_filename + "." + banner_extension
@@ -49,6 +57,33 @@ async def get_all_notifications():
     }
 
 
+@notification_api.get("/api/v1/notifications/with-pagination", status_code=200)
+async def get_all_notifications_with_pagination(
+    page: int = Query(..., description="Page number starting from 0"),
+    limit: int = Query(..., description="Number of items per page"),
+):
+    notification_details_db = all_notifications_serializer(notifications_collection.find({}))
+    if limit == -1:
+        return {
+            "status": "success",
+            "current_page": 1,
+            "current_results": len(notification_details_db),
+            "total_results": len(notification_details_db),
+            "notifications": notification_details_db
+        }
+    else:
+        start_idx = (int(page) - 1) * limit
+        end_idx = start_idx + limit
+        notifications_to_return = notification_details_db[start_idx:end_idx]
+        return {
+            "status": "success",
+            "current_page": page,
+            "current_results": len(notifications_to_return),
+            "total_results": len(notification_details_db),
+            "notifications": notifications_to_return
+        }
+
+
 @notification_api.get("/api/v1/notifications/{notification_id}", status_code=200)
 async def get_specific_notification(notification_id):
     notification_details_db = all_notifications_serializer(
@@ -77,11 +112,18 @@ async def get_specific_notification_banner(notification_id):
 
 @notification_api.post("/api/v1/notifications/{notification_id}", status_code=200)
 async def update_specific_notification(
-        notification_id,
-        title: Annotated[str, Form()],
-        context: Annotated[str, Form()],
-        disabled: Annotated[bool, Form()]
+    notification_id,
+    title: Annotated[str, Form()],
+    context: Annotated[str, Form()],
+    disabled: Annotated[bool, Form()],
+    authorization: str = Header(..., description="Bearer Token")
 ):
+    if not utils.users_auth.check_login_token(authorization):
+        return {
+            "status": "error",
+            "message": "unauthorized"
+        }
+
     notification_object_id = ObjectId(notification_id)
     existing_notification = notifications_collection.find_one({"_id": notification_object_id})
 
@@ -105,9 +147,16 @@ async def update_specific_notification(
 
 @notification_api.post("/api/v1/notifications/change-banner/{notification_id}", status_code=200)
 async def update_specific_notification_banner(
-        notification_id,
-        banner: UploadFile = File(...),
+    notification_id,
+    banner: UploadFile = File(...),
+    authorization: str = Header(..., description="Bearer Token")
 ):
+    if not utils.users_auth.check_login_token(authorization):
+        return {
+            "status": "error",
+            "message": "unauthorized"
+        }
+
     notification_object_id = ObjectId(notification_id)
     existing_notification = notifications_collection.find_one({"_id": notification_object_id})
 
