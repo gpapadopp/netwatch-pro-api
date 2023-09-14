@@ -50,7 +50,7 @@ async def add_notification(
 
 @notification_api.get("/api/v1/notifications/", status_code=200)
 async def get_all_notifications():
-    notification_details_db = all_notifications_serializer(notifications_collection.find({}))
+    notification_details_db = all_notifications_serializer(notifications_collection.find({}).sort("created_at", -1))
     return {
         "status": "success",
         "notifications": notification_details_db
