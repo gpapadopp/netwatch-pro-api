@@ -2,6 +2,7 @@
 def access_tokens_serializer(access_token) -> dict:
     return {
         'id': str(access_token['_id']),
+        'issuer': str(access_token['issuer']),
         'purpose': str(access_token['purpose']),
         'disabled': bool(access_token['disabled']),
         'api_key': str(access_token['api_key']),
