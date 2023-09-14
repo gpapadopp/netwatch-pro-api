@@ -14,3 +14,6 @@ internet_packages_collection = db['internet_packages']
 
 # Notifications - Collection
 notifications_collection = db['notifications']
+
+# Access Tokens - Collection
+access_tokens_collection = db['access_tokens']
