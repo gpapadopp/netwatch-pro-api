@@ -20,7 +20,7 @@ async def add_notification(
     unique_filename = str(uuid.uuid4())
     banner_extension = banner.filename.split(".")[1]
     file_unique_name = unique_filename + "." + banner_extension
-    file_location = f"notification_banners/{file_unique_name}"
+    file_location = f"files/notification_banners/{file_unique_name}"
     with open(file_location, "wb+") as file_object:
         file_object.write(banner.file.read())
 
@@ -71,7 +71,7 @@ async def get_specific_notification_banner(notification_id):
             "message": "Notification does NOT exists"
         }
 
-    file_location = f"notification_banners/{existing_notification['banner']}"
+    file_location = f"files/notification_banners/{existing_notification['banner']}"
     return file_location
 
 
@@ -120,7 +120,7 @@ async def update_specific_notification_banner(
     unique_filename = str(uuid.uuid4())
     banner_extension = banner.filename.split(".")[1]
     file_unique_name = unique_filename + "." + banner_extension
-    file_location = f"notification_banners/{file_unique_name}"
+    file_location = f"files/notification_banners/{file_unique_name}"
     with open(file_location, "wb+") as file_object:
         file_object.write(banner.file.read())
 

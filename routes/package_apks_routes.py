@@ -18,7 +18,7 @@ async def add_package_apks(
     unique_filename = str(uuid.uuid4())
     apk_file_extension = apk_file.filename.split(".")[1]
     file_unique_name = unique_filename + "." + apk_file_extension
-    file_location = f"apk_files/{file_unique_name}"
+    file_location = f"files/apk_files/{file_unique_name}"
     with open(file_location, "wb+") as file_object:
         file_object.write(apk_file.file.read())
 
