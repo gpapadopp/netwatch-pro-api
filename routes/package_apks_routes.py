@@ -8,7 +8,7 @@ import uuid
 package_apk = APIRouter()
 
 
-@package_apk.post("/api/v1/package-apks/add", status_code=201)
+@package_apk.post("/v1/package-apks/add", status_code=201)
 async def add_package_apks(
     device_token: Annotated[str, Form()],
     package_name: Annotated[str, Form()],

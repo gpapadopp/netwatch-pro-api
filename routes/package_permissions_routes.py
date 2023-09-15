@@ -21,7 +21,7 @@ all_permissions = AllAppPermissions()
 permission_access_checker = PermissionChecker()
 
 
-@package_permission.post("/api/v1/package-permissions/predict", status_code=201)
+@package_permission.post("/v1/package-permissions/predict", status_code=201)
 async def add_package_permission(
     device_token: Optional[str] = Form(None),
     package_name: Optional[str] = Form(None),

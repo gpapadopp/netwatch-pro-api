@@ -14,7 +14,7 @@ users_api = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-@users_api.post('/api/v1/users/add', status_code=201)
+@users_api.post('/v1/users/add', status_code=201)
 async def add_user(
         username: Annotated[str, Form()],
         password: Annotated[str, Form()],
@@ -49,7 +49,7 @@ async def add_user(
     }
 
 
-@users_api.post("/api/v1/users/login", status_code=200)
+@users_api.post("/v1/users/login", status_code=200)
 async def login_user(
         username: Annotated[str, Form()],
         password: Annotated[str, Form()],
@@ -94,7 +94,7 @@ async def login_user(
     }
 
 
-@users_api.get("/api/v1/users/", status_code=200)
+@users_api.get("/v1/users/", status_code=200)
 async def get_all_users(
         page: int = Query(..., description="Page number starting from 0"),
         limit: int = Query(..., description="Number of items per page"),
@@ -128,7 +128,7 @@ async def get_all_users(
         }
 
 
-@users_api.get("/api/v1/users/{user_id}", status_code=200)
+@users_api.get("/v1/users/{user_id}", status_code=200)
 async def get_specific_user(
         user_id,
         authorization: str = Header(..., description="Bearer Token"),
@@ -148,7 +148,7 @@ async def get_specific_user(
     }
 
 
-@users_api.post("/api/v1/users/{user_id}", status_code=200)
+@users_api.post("/v1/users/{user_id}", status_code=200)
 async def update_specific_user(
         user_id,
         username: Annotated[str, Form()],
@@ -187,7 +187,7 @@ async def update_specific_user(
     }
 
 
-@users_api.post("/api/v1/users/change-password/{user_id}", status_code=200)
+@users_api.post("/v1/users/change-password/{user_id}", status_code=200)
 async def update_password_specific_user(
         user_id,
         password: Annotated[str, Form()],

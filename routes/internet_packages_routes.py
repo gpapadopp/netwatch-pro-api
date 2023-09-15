@@ -7,7 +7,7 @@ from config.db import internet_packages_collection
 internet_package = APIRouter()
 
 
-@internet_package.post("/api/v1/internet-packages/add", status_code=201)
+@internet_package.post("/v1/internet-packages/add", status_code=201)
 async def add_internet_package(
     device_token: Annotated[str, Form()],
     source_ip: Annotated[str, Form()],

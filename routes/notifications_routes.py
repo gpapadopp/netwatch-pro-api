@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 notification_api = APIRouter()
 
 
-@notification_api.post("/api/v1/notifications/add", status_code=201)
+@notification_api.post("/v1/notifications/add", status_code=201)
 async def add_notification(
     title: Annotated[str, Form()],
     context: Annotated[str, Form()],
@@ -48,7 +48,7 @@ async def add_notification(
     }
 
 
-@notification_api.get("/api/v1/notifications/", status_code=200)
+@notification_api.get("/v1/notifications/", status_code=200)
 async def get_all_notifications():
     notification_details_db = all_notifications_serializer(notifications_collection.find({}).sort("created_at", -1))
     return {
@@ -57,7 +57,7 @@ async def get_all_notifications():
     }
 
 
-@notification_api.get("/api/v1/notifications/with-pagination", status_code=200)
+@notification_api.get("/v1/notifications/with-pagination", status_code=200)
 async def get_all_notifications_with_pagination(
     page: int = Query(..., description="Page number starting from 0"),
     limit: int = Query(..., description="Number of items per page"),
@@ -84,7 +84,7 @@ async def get_all_notifications_with_pagination(
         }
 
 
-@notification_api.get("/api/v1/notifications/{notification_id}", status_code=200)
+@notification_api.get("/v1/notifications/{notification_id}", status_code=200)
 async def get_specific_notification(notification_id):
     notification_details_db = all_notifications_serializer(
         notifications_collection.find({"_id": ObjectId(notification_id)}))
@@ -94,7 +94,7 @@ async def get_specific_notification(notification_id):
     }
 
 
-@notification_api.get("/api/v1/notifications/get-banner/{notification_id}", status_code=200,
+@notification_api.get("/v1/notifications/get-banner/{notification_id}", status_code=200,
                       response_class=FileResponse)
 async def get_specific_notification_banner(notification_id):
     notification_object_id = ObjectId(notification_id)
@@ -110,7 +110,7 @@ async def get_specific_notification_banner(notification_id):
     return file_location
 
 
-@notification_api.post("/api/v1/notifications/{notification_id}", status_code=200)
+@notification_api.post("/v1/notifications/{notification_id}", status_code=200)
 async def update_specific_notification(
     notification_id,
     title: Annotated[str, Form()],
@@ -145,7 +145,7 @@ async def update_specific_notification(
     }
 
 
-@notification_api.post("/api/v1/notifications/change-banner/{notification_id}", status_code=200)
+@notification_api.post("/v1/notifications/change-banner/{notification_id}", status_code=200)
 async def update_specific_notification_banner(
     notification_id,
     banner: UploadFile = File(...),
