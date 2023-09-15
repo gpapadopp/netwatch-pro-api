@@ -5,6 +5,8 @@ from schemas.package_permissions_schema import all_package_permissions_serialize
 from config.db import package_permissions_collection
 from utils.all_permissions import AllAppPermissions
 import utils.package_permission_prediction_enum
+from utils.permission_checker import PermissionChecker
+from enums.access_models_enum import AccessModelsEnum
 import tensorflow as tf
 import os
 
@@ -16,6 +18,7 @@ model_file_path = os.path.abspath(project_base_directory + "/utils/trained_model
 
 trained_model = tf.keras.models.load_model(model_file_path)
 all_permissions = AllAppPermissions()
+permission_access_checker = PermissionChecker()
 
 
 @package_permission.post("/api/v1/package-permissions/predict", status_code=201)
@@ -27,8 +30,22 @@ async def add_package_permission(
     certificate_subjects: Optional[str] = Form(None),
     certificate_issuers: Optional[str] = Form(None),
     certificate_serial_numbers: Optional[str] = Form(None),
-    certificate_versions: Optional[str] = Form(None)
+    certificate_versions: Optional[str] = Form(None),
+    api_key: Optional[str] = Form(None),
+    secret_key: Optional[str] = Form(None),
 ):
+    if api_key is None or secret_key is None:
+        return {
+            "status": "error",
+            "message": "unauthorized"
+        }
+
+    if not permission_access_checker.check_model_permission(AccessModelsEnum.PackagePermissionsModel, api_key, secret_key):
+        return {
+            "status": "error",
+            "message": "unauthorized"
+        }
+
     all_permissions.format_data_array(list(str(permissions).split(",")))
     input_features = tf.constant([all_permissions.train_data], dtype=tf.int32)
     prediction = trained_model.predict(input_features)
