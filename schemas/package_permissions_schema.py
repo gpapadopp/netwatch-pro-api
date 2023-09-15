@@ -9,6 +9,7 @@ def package_permissions_serializer(package_permission) -> dict:
         'certificate_issuers': list(package_permission['certificate_issuers']),
         'certificate_serial_numbers': list(package_permission['certificate_serial_numbers']),
         'certificate_versions': list(package_permission['certificate_versions']),
+        'is_malware': str(package_permission['is_malware']),
         'created_at': str(package_permission['created_at'])
     }
 

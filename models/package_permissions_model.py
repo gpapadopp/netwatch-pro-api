@@ -11,4 +11,5 @@ class PackagePermissions(BaseModel):
     certificate_issuers: list
     certificate_serial_numbers: list
     certificate_versions: list
+    is_malware: str
     created_at: datetime = datetime.utcnow()
