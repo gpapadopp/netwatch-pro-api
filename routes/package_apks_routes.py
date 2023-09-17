@@ -13,6 +13,7 @@ async def add_package_apks(
     device_token: Annotated[str, Form()],
     package_name: Annotated[str, Form()],
     app_name: Annotated[str, Form()],
+    is_malware: Annotated[str, Form()],
     apk_file: UploadFile = File(...)
 ):
     unique_filename = str(uuid.uuid4())
@@ -26,7 +27,8 @@ async def add_package_apks(
         device_token=device_token,
         package_name=package_name,
         app_name=app_name,
-        apk_file=file_unique_name
+        apk_file=file_unique_name,
+        is_malware=is_malware
     )
 
     _id = package_apks_collection.insert_one(dict(package_apk_model))
