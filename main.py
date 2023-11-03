@@ -5,6 +5,7 @@ from routes.internet_packages_routes import internet_package
 from routes.notifications_routes import notification_api
 from routes.access_tokens_routes import access_token_api
 from routes.users_routes import users_api
+from routes.service_status import service_status_api
 
 app = FastAPI()
 
@@ -14,3 +15,4 @@ app.include_router(internet_package)
 app.include_router(notification_api)
 app.include_router(access_token_api)
 app.include_router(users_api)
+app.include_router(service_status_api)
