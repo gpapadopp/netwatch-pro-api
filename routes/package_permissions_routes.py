@@ -9,6 +9,11 @@ from utils.permission_checker import PermissionChecker
 from enums.access_models_enum import AccessModelsEnum
 import tensorflow as tf
 import os
+from enums.permissions_danger.minimal_risk_enum import MinimalRiskPermissionsEnum
+from enums.permissions_danger.low_risk_enum import LowRiskPermissionsEnum
+from enums.permissions_danger.moderate_risk_enum import ModerateRiskPermissionsEnum
+from enums.permissions_danger.high_risk_enum import HighRiskPermissionsEnum
+from enums.permissions_danger.most_dangerous_enum import MostDangerousPermissionsEnum
 
 package_permission = APIRouter()
 
@@ -69,9 +74,45 @@ async def add_package_permission(
     _id = package_permissions_collection.insert_one(dict(package_permission_model))
     package_permission_details = all_package_permissions_serializer(
         package_permissions_collection.find({"_id": _id.inserted_id}))
+
+    permissions_request = list(str(permissions).split(","))
+
+    minimal_risk_permissions = []
+    low_risk_permissions = []
+    moderate_risk_permissions = []
+    high_risk_permissions = []
+    most_dangerous_permissions = []
+
+    for permission in permissions_request:
+        permission_name = list(permission.split("."))[-1]
+        for minimal_risk_permission in MinimalRiskPermissionsEnum:
+            if minimal_risk_permission.value == permission_name:
+                minimal_risk_permissions.append(permission_name)
+
+        for low_risk_permission in LowRiskPermissionsEnum:
+            if low_risk_permission.value == permission_name:
+                low_risk_permissions.append(permission_name)
+
+        for moderate_risk_permission in ModerateRiskPermissionsEnum:
+            if moderate_risk_permission.value == permission_name:
+                moderate_risk_permissions.append(permission_name)
+
+        for high_risk_permission in HighRiskPermissionsEnum:
+            if high_risk_permission.value == permission_name:
+               high_risk_permissions.append(permission_name)
+
+        for most_dangerous_permission in MostDangerousPermissionsEnum:
+            if most_dangerous_permission.value == permission_name:
+                most_dangerous_permissions.append(permission_name)
+
     return {
         "status": "success",
         "is_malware": is_package_malware == "1",
         "package_prediction": predicted_model_enum,
-        "package_permission": package_permission_details
+        "package_permission": package_permission_details,
+        "minimal_risk_permissions": minimal_risk_permissions,
+        "low_risk_permissions": low_risk_permissions,
+        "moderate_risk_permissions": moderate_risk_permissions,
+        "high_risk_permissions": high_risk_permissions,
+        "most_dangerous_permissions": most_dangerous_permissions
     }
