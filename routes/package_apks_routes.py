@@ -6,12 +6,21 @@ from config.db import package_apks_collection
 import uuid
 import hashlib
 import os
+import tensorflow as tf
 from utils.permission_checker import PermissionChecker
 from enums.access_models_enum import AccessModelsEnum
+from utils.package_apk_analyzer.analyze_apks import AnalyzeApks
+import utils.package_apk_prediction_enum
 
 package_apk = APIRouter()
 
+current_script_directory = os.path.dirname(os.path.abspath(__file__))
+project_base_directory = os.path.abspath(os.path.join(current_script_directory, ".."))
+model_file_path = os.path.abspath(project_base_directory + "/utils/trained_models/package_apks_model.keras")
+
+trained_model = tf.keras.models.load_model(model_file_path)
 permission_access_checker = PermissionChecker()
+package_analyzer = AnalyzeApks()
 
 
 @package_apk.post("/v1/package-apks/predict", status_code=201)
@@ -29,7 +38,7 @@ async def predict_package_apks(
             "message": "unauthorized"
         }
 
-    if not permission_access_checker.check_model_permission(AccessModelsEnum.PackagePermissionsModel, api_key, secret_key):
+    if not permission_access_checker.check_model_permission(AccessModelsEnum.PackageAPKsModel, api_key, secret_key):
         return {
             "status": "error",
             "message": "unauthorized"
@@ -60,12 +69,25 @@ async def predict_package_apks(
             "apk_package_details": package_apks_serializer(apk_db)
         }
 
+    # Make Prediction with Model
+    package_analyzer.initialize_variables(file_location)
+    package_analyzer.extract_apk_info()
+    input_features = tf.constant([package_analyzer.format_data()], dtype=tf.int32)
+    prediction = trained_model.predict(input_features)
+
+    threshold = 0.5
+    predicted_class = (prediction >= threshold).astype(int)
+    predicted_model_enum = utils.package_apk_prediction_enum.PackageApkPredictionEnum(
+        predicted_class).name
+    is_package_malware = "1" if predicted_model_enum is utils.package_apk_prediction_enum.PackageApkPredictionEnum.MALWARE else "0"
+
     package_apk_model = PackageApks(
         device_token=device_token,
         package_name=package_name,
         app_name=app_name,
         apk_file=file_unique_name,
-        md5_checksum=uploaded_apk_md5
+        md5_checksum=uploaded_apk_md5,
+        is_malware=is_package_malware
     )
 
     _id = package_apks_collection.insert_one(dict(package_apk_model))
