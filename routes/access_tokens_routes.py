@@ -10,13 +10,18 @@ from utils.permission_checker import PermissionChecker
 import utils.users_auth
 import uuid
 from bson import ObjectId
+from responses.access_tokens_responses import AccessTokenResponseDelete
+from responses.access_tokens_responses import AccessTokensResponseAdd
+from responses.access_tokens_responses import AccessTokensResponseIndex
+from responses.access_tokens_responses import AccessTokensResponseView
+from responses.access_tokens_responses import AccessTokenResponseUpdate
 
 access_token_api = APIRouter()
 date_time_util_instance = DateTimeUtils()
 permission_checker = PermissionChecker()
 
 
-@access_token_api.post("/v1/access-tokens/add", status_code=201)
+@access_token_api.post("/v1/access-tokens/add", status_code=201, tags=['Access Tokens'], summary="Add Access Token", description="Endpoint to add a new access token for public users", response_model=AccessTokensResponseAdd)
 async def add_access_token(
         issuer: Annotated[str, Form()],
         purpose: Annotated[str, Form()],
@@ -49,7 +54,7 @@ async def add_access_token(
     }
 
 
-@access_token_api.get("/v1/access-tokens/", status_code=200)
+@access_token_api.get("/v1/access-tokens/", status_code=200, tags=['Access Tokens'], summary="Get Access Tokens", description="Endpoint to get all access tokens", response_model=AccessTokensResponseIndex)
 async def get_all_access_token(
     page: int = Query(..., description="Page number starting from 0"),
     limit: int = Query(..., description="Number of items per page"),
@@ -83,7 +88,7 @@ async def get_all_access_token(
         }
 
 
-@access_token_api.get("/v1/access-tokens/{access_token_id}", status_code=200)
+@access_token_api.get("/v1/access-tokens/{access_token_id}", status_code=200, tags=['Access Tokens'], summary="Get Specific Access Token", description="Get Specific Access Token - By ID", response_model=AccessTokensResponseView)
 async def get_specific_access_token(
     access_token_id,
     authorization: str = Header(..., description="Bearer Token")
@@ -109,7 +114,7 @@ async def get_specific_access_token(
     }
 
 
-@access_token_api.post("/v1/access-tokens/{access_token_id}", status_code=200)
+@access_token_api.post("/v1/access-tokens/{access_token_id}", status_code=200, tags=['Access Tokens'], summary="Update Specific Access Token", description="Update Specific Access Token - By ID", response_model=AccessTokenResponseUpdate)
 async def update_specific_access_token(
     access_token_id,
     issuer: Annotated[str, Form()],
@@ -149,7 +154,7 @@ async def update_specific_access_token(
     }
 
 
-@access_token_api.delete("/v1/access-tokens/{access_token_id}", status_code=200)
+@access_token_api.delete("/v1/access-tokens/{access_token_id}", status_code=200, tags=['Access Tokens'], summary="Delete Specific Access Token", description="Delete Specific Access Token - By ID", response_model=AccessTokenResponseDelete)
 async def delete_specific_access_token(
     access_token_id,
     authorization: str = Header(..., description="Bearer Token")

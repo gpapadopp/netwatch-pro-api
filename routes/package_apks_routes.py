@@ -11,6 +11,7 @@ from utils.permission_checker import PermissionChecker
 from enums.access_models_enum import AccessModelsEnum
 from utils.package_apk_analyzer.analyze_apks import AnalyzeApks
 import utils.package_apk_prediction_enum
+from responses.package_apks_responses import PackageApksResponsePredict
 
 package_apk = APIRouter()
 
@@ -23,7 +24,7 @@ permission_access_checker = PermissionChecker()
 package_analyzer = AnalyzeApks()
 
 
-@package_apk.post("/v1/package-apks/predict", status_code=201)
+@package_apk.post("/v1/package-apks/predict", status_code=201, tags=['Package APKs'], summary="Predict Benign/Malware on APKs", description="Predict Benign/Malware on Uploaded APK File", response_model=PackageApksResponsePredict)
 async def predict_package_apks(
         device_token: Annotated[str, Form()],
         package_name: Annotated[str, Form()],
@@ -95,6 +96,6 @@ async def predict_package_apks(
         package_apks_collection.find({"_id": _id.inserted_id}))
     return {
         "status": "success",
-        "is_malware": None,
+        "is_malware": is_package_malware,
         "package_apk": package_apk_details_db
     }

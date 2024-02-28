@@ -3,11 +3,12 @@ from typing import Annotated
 from models.internet_packages_model import InternetPackages
 from schemas.internet_packages_schema import all_internet_packages_serializer
 from config.db import internet_packages_collection
+from responses.internet_packages_responses import InternetPackagesAdd
 
 internet_package = APIRouter()
 
 
-@internet_package.post("/v1/internet-packages/add", status_code=201)
+@internet_package.post("/v1/internet-packages/add", status_code=201, tags=['Internet Packages'], summary="Add Internet Package", description="Add an Internet Package", response_model=InternetPackagesAdd)
 async def add_internet_package(
     device_token: Annotated[str, Form()],
     source_ip: Annotated[str, Form()],

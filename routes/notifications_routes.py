@@ -7,11 +7,17 @@ import utils.users_auth
 import uuid
 from bson import ObjectId
 from fastapi.responses import FileResponse
+from responses.notifications_responses import NotificationResponseIndex
+from responses.notifications_responses import NotificationsResponseAdd
+from responses.notifications_responses import NotificationsResponseIndexWithPagination
+from responses.notifications_responses import NotificationsResponseView
+from responses.notifications_responses import NotificationsResponseUpdate
+from responses.notifications_responses import NotificationsResponseUpdateBanner
 
 notification_api = APIRouter()
 
 
-@notification_api.post("/v1/notifications/add", status_code=201)
+@notification_api.post("/v1/notifications/add", status_code=201, tags=['Notifications'], summary="Add Notification", description="Add a New Notification", response_model=NotificationsResponseAdd)
 async def add_notification(
     title: Annotated[str, Form()],
     context: Annotated[str, Form()],
@@ -48,7 +54,7 @@ async def add_notification(
     }
 
 
-@notification_api.get("/v1/notifications/", status_code=200)
+@notification_api.get("/v1/notifications/", status_code=200, tags=['Notifications'], summary="Get All Notifications", description="Get All Notifications", response_model=NotificationResponseIndex)
 async def get_all_notifications():
     notification_details_db = all_notifications_serializer(notifications_collection.find({}).sort("created_at", -1))
     return {
@@ -57,7 +63,7 @@ async def get_all_notifications():
     }
 
 
-@notification_api.get("/v1/notifications/with-pagination", status_code=200)
+@notification_api.get("/v1/notifications/with-pagination", status_code=200, tags=['Notifications'], summary="Get All Notifications with Pagination", description="Get All Notifications with Pagination", response_model=NotificationsResponseIndexWithPagination)
 async def get_all_notifications_with_pagination(
     page: int = Query(..., description="Page number starting from 0"),
     limit: int = Query(..., description="Number of items per page"),
@@ -84,7 +90,7 @@ async def get_all_notifications_with_pagination(
         }
 
 
-@notification_api.get("/v1/notifications/{notification_id}", status_code=200)
+@notification_api.get("/v1/notifications/{notification_id}", status_code=200, tags=['Notifications'], summary="Get Specific Notification", description="Get Specific Notification - By ID", response_model=NotificationsResponseView)
 async def get_specific_notification(notification_id):
     notification_details_db = all_notifications_serializer(
         notifications_collection.find({"_id": ObjectId(notification_id)}))
@@ -94,8 +100,7 @@ async def get_specific_notification(notification_id):
     }
 
 
-@notification_api.get("/v1/notifications/get-banner/{notification_id}", status_code=200,
-                      response_class=FileResponse)
+@notification_api.get("/v1/notifications/get-banner/{notification_id}", status_code=200, tags=['Notifications'], summary="Get the Notification Banner", description="Get the Notification Banner File", response_class=FileResponse)
 async def get_specific_notification_banner(notification_id):
     notification_object_id = ObjectId(notification_id)
     existing_notification = notifications_collection.find_one({"_id": notification_object_id})
@@ -110,7 +115,7 @@ async def get_specific_notification_banner(notification_id):
     return file_location
 
 
-@notification_api.post("/v1/notifications/{notification_id}", status_code=200)
+@notification_api.post("/v1/notifications/{notification_id}", status_code=200, tags=['Notifications'], summary="Update Specific Notification", description="Update Specific Notification - By ID", response_model=NotificationsResponseUpdate)
 async def update_specific_notification(
     notification_id,
     title: Annotated[str, Form()],
@@ -145,7 +150,7 @@ async def update_specific_notification(
     }
 
 
-@notification_api.post("/v1/notifications/change-banner/{notification_id}", status_code=200)
+@notification_api.post("/v1/notifications/change-banner/{notification_id}", status_code=200, tags=['Notifications'], summary="Update Specific Notification Banner", description="Update Specific Notification Banner - By ID", response_model=NotificationsResponseUpdateBanner)
 async def update_specific_notification_banner(
     notification_id,
     banner: UploadFile = File(...),

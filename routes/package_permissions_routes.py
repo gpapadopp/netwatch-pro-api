@@ -14,6 +14,7 @@ from enums.permissions_danger.low_risk_enum import LowRiskPermissionsEnum
 from enums.permissions_danger.moderate_risk_enum import ModerateRiskPermissionsEnum
 from enums.permissions_danger.high_risk_enum import HighRiskPermissionsEnum
 from enums.permissions_danger.most_dangerous_enum import MostDangerousPermissionsEnum
+from responses.package_permissions_responses import PackagePermissionsResponsePredict
 
 package_permission = APIRouter()
 
@@ -26,7 +27,7 @@ all_permissions = AllAppPermissions()
 permission_access_checker = PermissionChecker()
 
 
-@package_permission.post("/v1/package-permissions/predict", status_code=201)
+@package_permission.post("/v1/package-permissions/predict", status_code=201, tags=["Package Permissions"], summary="Predict Benign/Malware on Permissions", description="Predict Benign/Malware based on Permissions sent by user", response_model=PackagePermissionsResponsePredict)
 async def add_package_permission(
     device_token: Optional[str] = Form(None),
     package_name: Optional[str] = Form(None),
