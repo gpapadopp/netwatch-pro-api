@@ -48,10 +48,8 @@ async def add_access_token(
     _id = access_tokens_collection.insert_one(dict(access_token_model))
     access_token_details_db = all_access_tokens_serializer(
         access_tokens_collection.find({"_id": _id.inserted_id}))
-    return {
-        "status": "success",
-        "access_token": access_token_details_db
-    }
+
+    return AccessTokensResponseAdd(success=True, message=None, access_token=access_token_details_db)
 
 
 @access_token_api.get("/v1/access-tokens/", status_code=200, tags=['Access Tokens'], summary="Get Access Tokens", description="Endpoint to get all access tokens", response_model=AccessTokensResponseIndex)
@@ -61,31 +59,19 @@ async def get_all_access_token(
     authorization: str = Header(..., description="Bearer Token")
 ):
     if not utils.users_auth.check_login_token(authorization):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return AccessTokensResponseIndex(success=False, message="unauthorized", current_page=0, current_results=0, total_results=0, all_access_tokens=None)
 
     access_tokens_db = all_access_tokens_serializer(access_tokens_collection.find({}))
     if limit == -1:
-        return {
-            "status": "success",
-            "current_page": 1,
-            "current_results": len(access_tokens_db),
-            "total_results": len(access_tokens_db),
-            "all_access_tokens": access_tokens_db
-        }
+        return AccessTokensResponseIndex(success=True, message=None, current_page=1, current_results=len(access_tokens_db),
+                                         total_results=len(access_tokens_db), all_access_tokens=access_tokens_db)
     else:
         start_idx = (int(page) - 1) * limit
         end_idx = start_idx + limit
         access_tokens_to_return = access_tokens_db[start_idx:end_idx]
-        return {
-            "status": "success",
-            "current_page": page,
-            "current_results": len(access_tokens_to_return),
-            "total_results": len(access_tokens_db),
-            "all_access_tokens": access_tokens_to_return
-        }
+        return AccessTokensResponseIndex(success=True, message=None, current_page=page,
+                                         current_results=len(access_tokens_to_return),
+                                         total_results=len(access_tokens_db), all_access_tokens=access_tokens_to_return)
 
 
 @access_token_api.get("/v1/access-tokens/{access_token_id}", status_code=200, tags=['Access Tokens'], summary="Get Specific Access Token", description="Get Specific Access Token - By ID", response_model=AccessTokensResponseView)
@@ -94,24 +80,15 @@ async def get_specific_access_token(
     authorization: str = Header(..., description="Bearer Token")
 ):
     if not utils.users_auth.check_login_token(authorization):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return AccessTokensResponseView(success=False, message='unauthorized', access_token_details=None)
 
     access_token_details_db = all_access_tokens_serializer(
         access_tokens_collection.find({"_id": ObjectId(access_token_id)}))
 
     if access_token_details_db is None:
-        return {
-            "status": "error",
-            "message": "Access token does NOT exists"
-        }
+        return AccessTokensResponseView(success=False, message='Access token does NOT exists', access_token_details=None)
 
-    return {
-        "status": "success",
-        "access_token_details": access_token_details_db
-    }
+    return AccessTokensResponseView(success=True, message=None, access_token_details=access_token_details_db[0])
 
 
 @access_token_api.post("/v1/access-tokens/{access_token_id}", status_code=200, tags=['Access Tokens'], summary="Update Specific Access Token", description="Update Specific Access Token - By ID", response_model=AccessTokenResponseUpdate)
@@ -123,19 +100,13 @@ async def update_specific_access_token(
     authorization: str = Header(..., description="Bearer Token")
 ):
     if not utils.users_auth.check_login_token(authorization):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return AccessTokenResponseUpdate(success=False, message="unauthorized")
 
     access_token_object_id = ObjectId(access_token_id)
     existing_access_token = access_tokens_collection.find_one({"_id": access_token_object_id})
 
     if existing_access_token is None:
-        return {
-            "status": "error",
-            "message": "Access token does NOT exists"
-        }
+        return AccessTokenResponseUpdate(success=False, message="Access token does NOT exists")
 
     existing_access_token['issuer'] = issuer
     existing_access_token['purpose'] = purpose
@@ -148,10 +119,7 @@ async def update_specific_access_token(
 
     access_tokens_collection.update_one({"_id": access_token_object_id}, {"$set": existing_access_token})
 
-    return {
-        "status": "success",
-        "message": "Access Token Updated Successfully"
-    }
+    return AccessTokenResponseUpdate(success=True, message="Access Token Updated Successfully")
 
 
 @access_token_api.delete("/v1/access-tokens/{access_token_id}", status_code=200, tags=['Access Tokens'], summary="Delete Specific Access Token", description="Delete Specific Access Token - By ID", response_model=AccessTokenResponseDelete)
@@ -160,23 +128,14 @@ async def delete_specific_access_token(
     authorization: str = Header(..., description="Bearer Token")
 ):
     if not utils.users_auth.check_login_token(authorization):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return AccessTokenResponseDelete(success=False, message='unauthorized')
 
     access_token_object_id = ObjectId(access_token_id)
     existing_access_token = access_tokens_collection.find_one({"_id": access_token_object_id})
 
     if existing_access_token is None:
-        return {
-            "status": "error",
-            "message": "Access token does NOT exists"
-        }
+        return AccessTokenResponseDelete(success=False, message='Access token does NOT exists')
 
     access_tokens_collection.delete_one({"_id": access_token_object_id})
 
-    return {
-        "status": "success",
-        "message": "Access Token Deleted Successfully"
-    }
+    return AccessTokenResponseDelete(success=True, message='Access Token Deleted Successfully')

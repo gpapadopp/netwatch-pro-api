@@ -1,7 +1,9 @@
+from typing import Optional
 from pydantic import BaseModel
-from models.internet_packages_model import InternetPackages
+from response_models.internet_package import InternetPackagesResponseModel
 
 
 class InternetPackagesAdd(BaseModel):
-    status: str
-    internet_package: InternetPackages
+    success: bool
+    message: Optional[str]
+    internet_package: InternetPackagesResponseModel

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Form, Header, Query
 from typing import Annotated
 from models.users_model import UsersModel
 from datetime import datetime, timedelta
+from responses.authentication_responses import AuthenticationResponse
 from schemas.users_schema import all_users_serializer
 from config.db import users_collection
 from passlib.context import CryptContext
@@ -31,10 +32,7 @@ async def add_user(
         authorization: str = Header(..., description="Bearer Token"),
 ):
     if not utils.users_auth.check_login_token(authorization):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return UsersResponseAdd(success=False, message="unauthorized", user=None)
 
     user_model = UsersModel(
         username=username,
@@ -49,29 +47,19 @@ async def add_user(
     user_details_db = all_users_serializer(
         users_collection.find({"_id": _id.inserted_id}))
 
-    return {
-        "status": "success",
-        "user": user_details_db
-    }
-
+    return UsersResponseAdd(success=True, message=None, user=user_details_db[0])
 
 @users_api.post("/v1/users/login", status_code=200, tags=['Users'], summary="Login User", description="Authenticate a user", response_model=UsersResponseLogin)
 async def login_user(
-        username: Annotated[str, Form()],
-        password: Annotated[str, Form()],
+    username: str = Form(...),
+    password: str = Form(...),
 ):
     existing_user = users_collection.find_one({"username": username})
     if existing_user is None:
-        return {
-            "status": "error",
-            "message": "Wrong username or password"
-        }
+        return UsersResponseLogin(success=False, message="Wrong username/password", authentication=None)
 
     if not pwd_context.verify(password, existing_user["password"]):
-        return {
-            "status": "error",
-            "message": "Wrong username or password"
-        }
+        return UsersResponseLogin(success=False, message="Wrong username/password", authentication=None)
 
     expiration_date = datetime.now() + timedelta(minutes=utils.globals.ACCESS_TOKEN_EXPIRE_MINUTES)
 
@@ -91,13 +79,9 @@ async def login_user(
     }
     encoded_jwt = jwt.encode(data_to_encode, utils.globals.SECRET_KEY, algorithm=utils.globals.ALGORITHM)
 
-    return {
-        "status": "success",
-        "authentication": {
-            "token": encoded_jwt,
-            "type": "bearer"
-        }
-    }
+    authentication_response = AuthenticationResponse(token=encoded_jwt, type="bearer")
+
+    return UsersResponseLogin(success=True, message=None, authentication=authentication_response)
 
 
 @users_api.get("/v1/users/", status_code=200, tags=['Users'], summary="Get All Users", description="Get All Users with Pagination", response_model=UsersResponseIndex)
@@ -107,31 +91,18 @@ async def get_all_users(
         authorization: str = Header(..., description="Bearer Token"),
 ):
     if not utils.users_auth.check_login_token(authorization):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return UsersResponseIndex(success=False, message="unauthorized", current_page=0, current_results=0, total_results=0, all_users=None)
 
     users_db = all_users_serializer(users_collection.find({}))
     if limit == -1:
-        return {
-            "status": "success",
-            "current_page": 1,
-            "current_results": len(users_db),
-            "total_results": len(users_db),
-            "all_users": users_db
-        }
+        return UsersResponseIndex(success=True, message=None, current_page=1, current_results=len(users_db),
+                                  total_results=len(users_db), all_users=users_db)
     else:
         start_idx = (int(page) - 1) * limit
         end_idx = start_idx + limit
         users_to_return = users_db[start_idx:end_idx]
-        return {
-            "status": "success",
-            "current_page": page,
-            "current_results": len(users_to_return),
-            "total_results": len(users_db),
-            "all_users": users_to_return
-        }
+        return UsersResponseIndex(success=True, message=None, current_page=page, current_results=len(users_to_return),
+                                  total_results=len(users_to_return), all_users=users_to_return)
 
 
 @users_api.get("/v1/users/{user_id}", status_code=200, tags=['Users'], summary="Get Specific User", description="Get Specific User - By ID", response_model=UsersResponseView)
@@ -140,18 +111,12 @@ async def get_specific_user(
         authorization: str = Header(..., description="Bearer Token"),
 ):
     if not utils.users_auth.check_login_token(authorization):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return UsersResponseView(success=False, message="unauthorized", user_details=None)
 
     user_details_db = all_users_serializer(
         users_collection.find({"_id": ObjectId(user_id)}))
 
-    return {
-        "status": "success",
-        "user_details": user_details_db
-    }
+    return UsersResponseView(success=True, message=None, user_details=user_details_db[0])
 
 
 @users_api.post("/v1/users/{user_id}", status_code=200, tags=['Users'], summary="Update Specific User", description="Update Specific User - By ID", response_model=UsersResponseUpdate)
@@ -165,19 +130,13 @@ async def update_specific_user(
         authorization: str = Header(..., description="Bearer Token"),
 ):
     if not utils.users_auth.check_login_token(authorization):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return UsersResponseUpdate(success=False, message="unauthorized")
 
     user_object_id = ObjectId(user_id)
     existing_user = users_collection.find_one({"_id": user_object_id})
 
     if existing_user is None:
-        return {
-            "status": "error",
-            "message": "User does NOT exists"
-        }
+        return UsersResponseUpdate(success=False, message="User not Exists")
 
     existing_user['username'] = username
     existing_user['first_name'] = first_name
@@ -187,10 +146,7 @@ async def update_specific_user(
 
     users_collection.update_one({"_id": user_object_id}, {"$set": existing_user})
 
-    return {
-        "status": "success",
-        "message": "User Updated Successfully"
-    }
+    return UsersResponseUpdate(success=True, message="User Updated Successfully")
 
 
 @users_api.post("/v1/users/change-password/{user_id}", status_code=200, tags=['Users'], summary="Update User's password", description="Update Specific User's Password - By ID", response_model=UsersResponseUpdatePassword)
@@ -200,25 +156,16 @@ async def update_password_specific_user(
         authorization: str = Header(..., description="Bearer Token"),
 ):
     if not utils.users_auth.check_login_token(authorization):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return UsersResponseUpdatePassword(success=False, message="unauthorized")
 
     user_object_id = ObjectId(user_id)
     existing_user = users_collection.find_one({"_id": user_object_id})
 
     if existing_user is None:
-        return {
-            "status": "error",
-            "message": "User does NOT exists"
-        }
+        return UsersResponseUpdatePassword(success=False, message="User not exists")
 
     existing_user['password'] = pwd_context.hash(password)
 
     users_collection.update_one({"_id": user_object_id}, {"$set": existing_user})
 
-    return {
-        "status": "success",
-        "message": "User Updated Successfully"
-    }
+    return UsersResponseUpdatePassword(success=True, message="User Updated Successfully")

@@ -34,16 +34,10 @@ async def predict_package_apks(
         apk_file: UploadFile = File(...)
 ):
     if api_key is None or secret_key is None:
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return PackageApksResponsePredict(success=False, message="unauthorized", is_malware=None, package_apk=None)
 
     if not permission_access_checker.check_model_permission(AccessModelsEnum.PackageAPKsModel, api_key, secret_key):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return PackageApksResponsePredict(success=False, message="unauthorized", is_malware=None, package_apk=None)
 
     unique_filename = str(uuid.uuid4())
     apk_file_extension = apk_file.filename.split(".")[1]
@@ -64,16 +58,12 @@ async def predict_package_apks(
     apk_db = package_apks_collection.find_one({"md5_checksum": uploaded_apk_md5})
     if apk_db:
         os.remove(file_location)
-        return {
-            "status": "success",
-            "is_malware": None if (apk_db['is_malware'] is None or apk_db['is_malware'] == 'None') else bool(apk_db['is_malware']),
-            "apk_package_details": package_apks_serializer(apk_db)
-        }
+        return PackageApksResponsePredict(success=True, message=None, is_malware=None if (apk_db['is_malware'] is None or apk_db['is_malware'] == 'None') else bool(apk_db['is_malware']), package_apk=package_apks_serializer(apk_db)[0])
 
     # Make Prediction with Model
     package_analyzer.initialize_variables(file_location)
     package_analyzer.extract_apk_info()
-    input_features = tf.constant([package_analyzer.format_data()], dtype=tf.int32)
+    input_features = tf.constant(package_analyzer.format_data(), dtype=tf.int32)
     prediction = trained_model.predict(input_features)
 
     threshold = 0.5
@@ -94,8 +84,5 @@ async def predict_package_apks(
     _id = package_apks_collection.insert_one(dict(package_apk_model))
     package_apk_details_db = all_package_apks_serializer(
         package_apks_collection.find({"_id": _id.inserted_id}))
-    return {
-        "status": "success",
-        "is_malware": is_package_malware,
-        "package_apk": package_apk_details_db
-    }
+
+    return PackageApksResponsePredict(success=True, message=None, is_malware=is_package_malware, package_apk=package_apk_details_db[0])

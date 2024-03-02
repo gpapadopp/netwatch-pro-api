@@ -1,13 +1,15 @@
 from datetime import datetime
-from pydantic import BaseModel
 from typing import Optional
 
+from pydantic import BaseModel
 
-class PackageApks(BaseModel):
+
+class PackageApksResponseModel(BaseModel):
+    id: str
     device_token: str
     package_name: str
     app_name: str
     apk_file: str
     is_malware: Optional[str]
-    created_at: datetime = datetime.utcnow()
+    created_at: datetime
     md5_checksum: str

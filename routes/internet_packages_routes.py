@@ -33,7 +33,4 @@ async def add_internet_package(
     _id = internet_packages_collection.insert_one(dict(internet_package_model))
     internet_package_details_db = all_internet_packages_serializer(
         internet_packages_collection.find({"_id": _id.inserted_id}))
-    return {
-        "status": "success",
-        "internet_package": internet_package_details_db
-    }
+    return InternetPackagesAdd(success=True, message=None, internet_package=internet_package_details_db[0])

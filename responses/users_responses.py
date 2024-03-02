@@ -1,36 +1,41 @@
 from pydantic import BaseModel
-from models.users_model import UsersModel
 from responses.authentication_responses import AuthenticationResponse
+from response_models.user import UsersResponseModel
+from typing import Optional
 
 
 class UsersResponseAdd(BaseModel):
-    status: str
-    user: UsersModel
+    success: bool
+    message: Optional[str]
+    user: Optional[UsersResponseModel]
 
 
 class UsersResponseLogin(BaseModel):
-    status: str
-    authentication: AuthenticationResponse
+    success: bool
+    message: Optional[str]
+    authentication: Optional[AuthenticationResponse]
 
 
 class UsersResponseIndex(BaseModel):
-    status: str
+    success: bool
+    message: Optional[str]
     current_page: int
     current_results: int
     total_results: int
-    all_users: UsersModel
+    all_users: Optional[list[UsersResponseModel]]
 
 
 class UsersResponseView(BaseModel):
-    status: str
-    user_details: UsersModel
+    success: bool
+    message: Optional[str]
+    user_details: Optional[UsersResponseModel]
 
 
 class UsersResponseUpdate(BaseModel):
-    status: str
+    success: bool
     message: str
 
 
 class UsersResponseUpdatePassword(BaseModel):
-    status: str
+    success: bool
     message: str

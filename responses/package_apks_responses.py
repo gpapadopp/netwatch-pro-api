@@ -1,8 +1,10 @@
+from typing import Optional
+from response_models.package_apk import PackageApksResponseModel
 from pydantic import BaseModel
-from models.package_apks_model import PackageApks
 
 
 class PackageApksResponsePredict(BaseModel):
-    status: str
-    is_malware: bool
-    package_apk: PackageApks
+    success: bool
+    message: Optional[str]
+    is_malware: Optional[bool]
+    package_apk: Optional[PackageApksResponseModel]

@@ -1,15 +1,16 @@
 from pydantic import BaseModel
-from models.package_apks_model import PackageApks
-from typing import List
+from response_models.package_permission import PackagePermissionsResponseModel
+from typing import List, Optional
 
 
 class PackagePermissionsResponsePredict(BaseModel):
-    status: str
-    is_malware: bool
-    package_prediction: str
-    package_permission: PackageApks
-    minimal_risk_permissions: List[str]
-    low_risk_permissions: List[str]
-    moderate_risk_permissions: List[str]
-    high_risk_permissions: List[str]
-    most_dangerous_permissions: List[str]
+    success: bool
+    message: Optional[str]
+    is_malware: Optional[bool]
+    package_prediction: Optional[str]
+    package_permission: Optional[PackagePermissionsResponseModel]
+    minimal_risk_permissions: Optional[List[str]]
+    low_risk_permissions: Optional[List[str]]
+    moderate_risk_permissions: Optional[List[str]]
+    high_risk_permissions: Optional[List[str]]
+    most_dangerous_permissions: Optional[List[str]]

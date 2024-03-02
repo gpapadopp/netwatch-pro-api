@@ -6,10 +6,7 @@ from androguard.core.bytecodes.apk import APK
 from androguard.core.bytecodes import dvm
 from utils.all_permissions import AllAppPermissions
 import numpy as np
-
-
-class AllIntents:
-    pass
+from utils.package_apk_analyzer.all_intents import AllIntents
 
 
 class AnalyzeApks:
@@ -53,16 +50,14 @@ class AnalyzeApks:
                     package_serialized_array.append(0)
 
             for app_intent in self.app_intents.all_intents:
-                if app_intent['package_name'] in self.all_intents[i]:
+                if app_intent['package_name'] in self.all_action_names[i]:
                     package_serialized_array.append(1)
                 else:
                     package_serialized_array.append(0)
 
             all_packages_serialized_array.append(package_serialized_array)
 
-        self.all_train_data = np.array(all_packages_serialized_array)
-        self.all_train_data_classes = np.array(self.all_training_classes)
-        self.all_train_data_classes = self.all_train_data_classes.astype(int)
+        return np.array(all_packages_serialized_array)
 
     def _extract_manifest_info(self, file):
         try:

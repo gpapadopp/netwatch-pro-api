@@ -1,36 +1,40 @@
 from pydantic import BaseModel
-from models.notifications_model import NotificationsModel
-from typing import List
+from response_models.notification import NotificationResponseModel
+from typing import List, Optional
 
 
 class NotificationsResponseAdd(BaseModel):
-    status: str
-    notification: NotificationsModel
+    success: bool
+    message: Optional[str]
+    notification: Optional[NotificationResponseModel]
 
 
 class NotificationResponseIndex(BaseModel):
-    status: str
-    notifications: List[NotificationsModel]
+    success: bool
+    message: Optional[str]
+    notifications: Optional[List[NotificationResponseModel]]
 
 
 class NotificationsResponseIndexWithPagination(BaseModel):
-    status: str
+    success: bool
+    message: Optional[str]
     current_page: int
     current_results: int
     total_results: int
-    notifications: List[NotificationsModel]
+    notifications: Optional[List[NotificationResponseModel]]
 
 
 class NotificationsResponseView(BaseModel):
-    status: str
-    notification: NotificationsModel
+    success: bool
+    message: Optional[str]
+    notification: Optional[NotificationResponseModel]
 
 
 class NotificationsResponseUpdate(BaseModel):
-    status: str
+    success: bool
     message: str
 
 
 class NotificationsResponseUpdateBanner(BaseModel):
-    status: str
+    success: bool
     message: str

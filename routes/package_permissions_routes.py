@@ -41,16 +41,14 @@ async def add_package_permission(
     secret_key: Optional[str] = Form(None),
 ):
     if api_key is None or secret_key is None:
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return PackagePermissionsResponsePredict(success=False, message='unauthorized', is_malware=None, package_prediction=None, package_permission=None, minimal_risk_permissions=None, low_risk_permissions=None, moderate_risk_permissions=None, high_risk_permissions=None, most_dangerous_permissions=None)
 
     if not permission_access_checker.check_model_permission(AccessModelsEnum.PackagePermissionsModel, api_key, secret_key):
-        return {
-            "status": "error",
-            "message": "unauthorized"
-        }
+        return PackagePermissionsResponsePredict(success=False, message='unauthorized', is_malware=None,
+                                                 package_prediction=None, package_permission=None,
+                                                 minimal_risk_permissions=None, low_risk_permissions=None,
+                                                 moderate_risk_permissions=None, high_risk_permissions=None,
+                                                 most_dangerous_permissions=None)
 
     all_permissions.format_data_array(list(str(permissions).split(",")))
     input_features = tf.constant([all_permissions.train_data], dtype=tf.int32)
@@ -106,14 +104,8 @@ async def add_package_permission(
             if most_dangerous_permission.value == permission_name:
                 most_dangerous_permissions.append(permission_name)
 
-    return {
-        "status": "success",
-        "is_malware": is_package_malware == "1",
-        "package_prediction": predicted_model_enum,
-        "package_permission": package_permission_details,
-        "minimal_risk_permissions": minimal_risk_permissions,
-        "low_risk_permissions": low_risk_permissions,
-        "moderate_risk_permissions": moderate_risk_permissions,
-        "high_risk_permissions": high_risk_permissions,
-        "most_dangerous_permissions": most_dangerous_permissions
-    }
+    return PackagePermissionsResponsePredict(success=True, message=None, is_malware=is_package_malware == "1",
+                                             package_prediction=predicted_model_enum, package_permission=package_permission_details[0],
+                                             minimal_risk_permissions=minimal_risk_permissions, low_risk_permissions=low_risk_permissions,
+                                             moderate_risk_permissions=moderate_risk_permissions, high_risk_permissions=high_risk_permissions,
+                                             most_dangerous_permissions=most_dangerous_permissions)

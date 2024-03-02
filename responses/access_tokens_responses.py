@@ -1,31 +1,34 @@
 from pydantic import BaseModel
-from typing import List
-from models.access_tokens_model import AccessTokensModel
+from typing import List, Optional
+from response_models.access_token import AccessTokenResponseModel
 
 
 class AccessTokensResponseAdd(BaseModel):
-    status: str
-    access_token: List[AccessTokensModel]
+    success: bool
+    message: Optional[str]
+    access_token: List[AccessTokenResponseModel]
 
 
 class AccessTokensResponseIndex(BaseModel):
-    status: str
+    success: int
+    message: Optional[str]
     current_page: int
     current_results: int
     total_results: int
-    all_access_tokens: List[AccessTokensModel]
+    all_access_tokens: Optional[List[AccessTokenResponseModel]]
 
 
 class AccessTokensResponseView(BaseModel):
-    status: str
-    access_token_details: AccessTokensModel
+    success: bool
+    message: Optional[str]
+    access_token_details: Optional[AccessTokenResponseModel]
 
 
 class AccessTokenResponseUpdate(BaseModel):
-    status: str
-    message: str
+    success: bool
+    message: Optional[str]
 
 
 class AccessTokenResponseDelete(BaseModel):
-    status: str
-    message: str
+    success: bool
+    message: Optional[str]
