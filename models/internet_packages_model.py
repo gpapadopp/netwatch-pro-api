@@ -12,3 +12,4 @@ class InternetPackages(BaseModel):
     raw_header: str
     raw_payload: str
     created_at: datetime = datetime.utcnow()
+    access_token_id: str

@@ -3,6 +3,7 @@ from typing import Optional
 from models.package_permissions_model import PackagePermissions
 from schemas.package_permissions_schema import all_package_permissions_serializer
 from config.db import package_permissions_collection
+from config.db import access_tokens_collection
 from utils.all_permissions import AllAppPermissions
 import utils.package_permission_prediction_enum
 from utils.permission_checker import PermissionChecker
@@ -50,6 +51,8 @@ async def add_package_permission(
                                                  moderate_risk_permissions=None, high_risk_permissions=None,
                                                  most_dangerous_permissions=None)
 
+    current_access_token = access_tokens_collection.find_one({"api_key": api_key, "secret_key": secret_key})
+
     all_permissions.format_data_array(list(str(permissions).split(",")))
     input_features = tf.constant([all_permissions.train_data], dtype=tf.int32)
     prediction = trained_model.predict(input_features)
@@ -68,7 +71,8 @@ async def add_package_permission(
         certificate_issuers=list(str(certificate_issuers).split(",")),
         certificate_serial_numbers=list(str(certificate_serial_numbers).split(",")),
         certificate_versions=list(str(certificate_versions).split(",")),
-        is_malware=is_package_malware
+        is_malware=is_package_malware,
+        access_token_id=str(current_access_token['_id'])
     )
     _id = package_permissions_collection.insert_one(dict(package_permission_model))
     package_permission_details = all_package_permissions_serializer(

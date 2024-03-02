@@ -9,7 +9,8 @@ def internet_packages_serializer(internet_package) -> dict:
         'header_type': str(internet_package['header_type']),
         'raw_header': str(internet_package['raw_header']),
         'raw_payload': str(internet_package['raw_payload']),
-        'created_at': str(internet_package['created_at'])
+        'created_at': str(internet_package['created_at']),
+        'access_token_id': str(internet_package['access_token_id'])
     }
 
 

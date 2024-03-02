@@ -13,3 +13,4 @@ class PackageApksResponseModel(BaseModel):
     is_malware: Optional[str]
     created_at: datetime
     md5_checksum: str
+    access_token_id: str

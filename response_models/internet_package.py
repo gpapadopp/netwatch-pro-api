@@ -13,3 +13,4 @@ class InternetPackagesResponseModel(BaseModel):
     raw_header: str
     raw_payload: str
     created_at: datetime
+    access_token_id: str

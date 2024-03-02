@@ -13,3 +13,4 @@ class PackagePermissions(BaseModel):
     certificate_versions: list
     is_malware: str
     created_at: datetime = datetime.utcnow()
+    access_token_id: str
