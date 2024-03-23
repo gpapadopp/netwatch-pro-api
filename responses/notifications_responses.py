@@ -38,3 +38,8 @@ class NotificationsResponseUpdate(BaseModel):
 class NotificationsResponseUpdateBanner(BaseModel):
     success: bool
     message: str
+
+
+class NotificationsResponseDelete(BaseModel):
+    success: bool
+    message: str

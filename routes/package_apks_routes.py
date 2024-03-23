@@ -2,8 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Form
 from typing import Annotated, Optional
 from models.package_apks_model import PackageApks
 from schemas.package_apks_schema import all_package_apks_serializer
-from config.db import package_apks_collection
-from config.db import access_tokens_collection
+from config.db import DatabaseConnection
 import uuid
 import hashlib
 import os
@@ -40,7 +39,7 @@ async def predict_package_apks(
     if not permission_access_checker.check_model_permission(AccessModelsEnum.PackageAPKsModel, api_key, secret_key):
         return PackageApksResponsePredict(success=False, message="unauthorized", is_malware=None, package_apk=None)
 
-    current_access_token = access_tokens_collection.find_one({"api_key": api_key, "secret_key": secret_key})
+    current_access_token = DatabaseConnection.get_access_tokens_collection().find_one({"api_key": api_key, "secret_key": secret_key})
 
     unique_filename = str(uuid.uuid4())
     apk_file_extension = apk_file.filename.split(".")[1]
@@ -58,7 +57,7 @@ async def predict_package_apks(
     uploaded_apk_md5 = md5.hexdigest()
 
     # Check MD5 Exists in DB
-    apk_db = package_apks_collection.find_one({"md5_checksum": uploaded_apk_md5})
+    apk_db = DatabaseConnection.get_package_apks_collection().find_one({"md5_checksum": uploaded_apk_md5})
     if apk_db:
         os.remove(file_location)
         package_apk_model = PackageApks(
@@ -70,9 +69,9 @@ async def predict_package_apks(
             is_malware=str(apk_db['is_malware']),
             access_token_id=str(current_access_token['_id'])
         )
-        _id = package_apks_collection.insert_one(dict(package_apk_model))
+        _id = DatabaseConnection.get_package_apks_collection().insert_one(dict(package_apk_model))
         package_apk_details_db = all_package_apks_serializer(
-            package_apks_collection.find({"_id": _id.inserted_id}))
+            DatabaseConnection.get_package_apks_collection().find({"_id": _id.inserted_id}))
 
         return PackageApksResponsePredict(success=True, message=None, is_malware=None if (apk_db['is_malware'] is None or apk_db['is_malware'] == 'None') else bool(apk_db['is_malware']), package_apk=package_apk_details_db[0])
 
@@ -98,8 +97,8 @@ async def predict_package_apks(
         access_token_id=str(current_access_token['_id'])
     )
 
-    _id = package_apks_collection.insert_one(dict(package_apk_model))
+    _id = DatabaseConnection.get_package_apks_collection().insert_one(dict(package_apk_model))
     package_apk_details_db = all_package_apks_serializer(
-        package_apks_collection.find({"_id": _id.inserted_id}))
+        DatabaseConnection.get_package_apks_collection().find({"_id": _id.inserted_id}))
 
     return PackageApksResponsePredict(success=True, message=None, is_malware=is_package_malware, package_apk=package_apk_details_db[0])

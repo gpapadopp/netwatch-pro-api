@@ -3,8 +3,7 @@ from typing import Annotated, Optional
 from enums.access_models_enum import AccessModelsEnum
 from models.internet_packages_model import InternetPackages
 from schemas.internet_packages_schema import all_internet_packages_serializer
-from config.db import internet_packages_collection
-from config.db import access_tokens_collection
+from config.db import DatabaseConnection
 from responses.internet_packages_responses import InternetPackagesAdd
 from utils.permission_checker import PermissionChecker
 
@@ -31,7 +30,7 @@ async def add_internet_package(
     if not permission_access_checker.check_model_permission(AccessModelsEnum.PackageAPKsModel, api_key, secret_key):
         return InternetPackagesAdd(success=False, message="unauthorized", internet_package=None)
 
-    current_access_token = access_tokens_collection.find_one({"api_key": api_key, "secret_key": secret_key})
+    current_access_token = DatabaseConnection.get_access_tokens_collection().find_one({"api_key": api_key, "secret_key": secret_key})
 
     internet_package_model = InternetPackages(
         device_token=device_token,
@@ -45,7 +44,7 @@ async def add_internet_package(
         access_token_id=str(current_access_token['_id'])
     )
 
-    _id = internet_packages_collection.insert_one(dict(internet_package_model))
+    _id = DatabaseConnection.get_internet_packages_collection().insert_one(dict(internet_package_model))
     internet_package_details_db = all_internet_packages_serializer(
-        internet_packages_collection.find({"_id": _id.inserted_id}))
+        DatabaseConnection.get_internet_packages_collection().find({"_id": _id.inserted_id}))
     return InternetPackagesAdd(success=True, message=None, internet_package=internet_package_details_db[0])

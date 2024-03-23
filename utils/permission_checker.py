@@ -1,5 +1,5 @@
 from enums.access_models_enum import AccessModelsEnum
-from config.db import access_tokens_collection
+from config.db import DatabaseConnection
 from datetime import datetime
 
 
@@ -8,7 +8,7 @@ class PermissionChecker:
         return
 
     def check_model_permission(self, model_name: AccessModelsEnum, api_key, secret_key) -> bool:
-        access_model_object = access_tokens_collection.find_one({"api_key": api_key, "secret_key": secret_key})
+        access_model_object = DatabaseConnection.get_access_tokens_collection().find_one({"api_key": api_key, "secret_key": secret_key})
         if access_model_object is None:
             return False
 

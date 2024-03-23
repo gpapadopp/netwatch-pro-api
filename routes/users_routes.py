@@ -4,7 +4,7 @@ from models.users_model import UsersModel
 from datetime import datetime, timedelta
 from responses.authentication_responses import AuthenticationResponse
 from schemas.users_schema import all_users_serializer
-from config.db import users_collection
+from config.db import DatabaseConnection
 from passlib.context import CryptContext
 import utils.globals
 import utils.users_auth
@@ -43,9 +43,9 @@ async def add_user(
         disabled=disabled
     )
 
-    _id = users_collection.insert_one(dict(user_model))
+    _id = DatabaseConnection.get_users_collection().insert_one(dict(user_model))
     user_details_db = all_users_serializer(
-        users_collection.find({"_id": _id.inserted_id}))
+        DatabaseConnection.get_users_collection().find({"_id": _id.inserted_id}))
 
     return UsersResponseAdd(success=True, message=None, user=user_details_db[0])
 
@@ -54,7 +54,7 @@ async def login_user(
     username: str = Form(...),
     password: str = Form(...),
 ):
-    existing_user = users_collection.find_one({"username": username})
+    existing_user = DatabaseConnection.get_users_collection().find_one({"username": username})
     if existing_user is None:
         return UsersResponseLogin(success=False, message="Wrong username/password", authentication=None)
 
@@ -93,7 +93,7 @@ async def get_all_users(
     if not utils.users_auth.check_login_token(authorization):
         return UsersResponseIndex(success=False, message="unauthorized", current_page=0, current_results=0, total_results=0, all_users=None)
 
-    users_db = all_users_serializer(users_collection.find({}))
+    users_db = all_users_serializer(DatabaseConnection.get_users_collection().find({}))
     if limit == -1:
         return UsersResponseIndex(success=True, message=None, current_page=1, current_results=len(users_db),
                                   total_results=len(users_db), all_users=users_db)
@@ -113,10 +113,13 @@ async def get_specific_user(
     if not utils.users_auth.check_login_token(authorization):
         return UsersResponseView(success=False, message="unauthorized", user_details=None)
 
-    user_details_db = all_users_serializer(
-        users_collection.find({"_id": ObjectId(user_id)}))
+    try:
+        user_details_db = all_users_serializer(
+            DatabaseConnection.get_users_collection().find({"_id": ObjectId(user_id)}))
 
-    return UsersResponseView(success=True, message=None, user_details=user_details_db[0])
+        return UsersResponseView(success=True, message=None, user_details=user_details_db[0])
+    except Exception as ex:
+        return UsersResponseView(success=False, message="User does NOT exists", user_details=None)
 
 
 @users_api.post("/v1/users/{user_id}", status_code=200, tags=['Users'], summary="Update Specific User", description="Update Specific User - By ID", response_model=UsersResponseUpdate)
@@ -132,21 +135,24 @@ async def update_specific_user(
     if not utils.users_auth.check_login_token(authorization):
         return UsersResponseUpdate(success=False, message="unauthorized")
 
-    user_object_id = ObjectId(user_id)
-    existing_user = users_collection.find_one({"_id": user_object_id})
+    try:
+        user_object_id = ObjectId(user_id)
+        existing_user = DatabaseConnection.get_users_collection().find_one({"_id": user_object_id})
 
-    if existing_user is None:
+        if existing_user is None:
+            return UsersResponseUpdate(success=False, message="User not Exists")
+
+        existing_user['username'] = username
+        existing_user['first_name'] = first_name
+        existing_user['last_name'] = last_name
+        existing_user['email'] = email
+        existing_user['disabled'] = disabled
+
+        DatabaseConnection.get_users_collection().update_one({"_id": user_object_id}, {"$set": existing_user})
+
+        return UsersResponseUpdate(success=True, message="User Updated Successfully")
+    except Exception as ex:
         return UsersResponseUpdate(success=False, message="User not Exists")
-
-    existing_user['username'] = username
-    existing_user['first_name'] = first_name
-    existing_user['last_name'] = last_name
-    existing_user['email'] = email
-    existing_user['disabled'] = disabled
-
-    users_collection.update_one({"_id": user_object_id}, {"$set": existing_user})
-
-    return UsersResponseUpdate(success=True, message="User Updated Successfully")
 
 
 @users_api.post("/v1/users/change-password/{user_id}", status_code=200, tags=['Users'], summary="Update User's password", description="Update Specific User's Password - By ID", response_model=UsersResponseUpdatePassword)
@@ -158,14 +164,17 @@ async def update_password_specific_user(
     if not utils.users_auth.check_login_token(authorization):
         return UsersResponseUpdatePassword(success=False, message="unauthorized")
 
-    user_object_id = ObjectId(user_id)
-    existing_user = users_collection.find_one({"_id": user_object_id})
+    try:
+        user_object_id = ObjectId(user_id)
+        existing_user = DatabaseConnection.get_users_collection().find_one({"_id": user_object_id})
 
-    if existing_user is None:
+        if existing_user is None:
+            return UsersResponseUpdatePassword(success=False, message="User not exists")
+
+        existing_user['password'] = pwd_context.hash(password)
+
+        DatabaseConnection.get_users_collection().update_one({"_id": user_object_id}, {"$set": existing_user})
+
+        return UsersResponseUpdatePassword(success=True, message="User Updated Successfully")
+    except Exception as ex:
         return UsersResponseUpdatePassword(success=False, message="User not exists")
-
-    existing_user['password'] = pwd_context.hash(password)
-
-    users_collection.update_one({"_id": user_object_id}, {"$set": existing_user})
-
-    return UsersResponseUpdatePassword(success=True, message="User Updated Successfully")

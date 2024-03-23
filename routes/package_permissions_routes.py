@@ -2,8 +2,7 @@ from fastapi import APIRouter, Form
 from typing import Optional
 from models.package_permissions_model import PackagePermissions
 from schemas.package_permissions_schema import all_package_permissions_serializer
-from config.db import package_permissions_collection
-from config.db import access_tokens_collection
+from config.db import DatabaseConnection
 from utils.all_permissions import AllAppPermissions
 import utils.package_permission_prediction_enum
 from utils.permission_checker import PermissionChecker
@@ -51,7 +50,7 @@ async def add_package_permission(
                                                  moderate_risk_permissions=None, high_risk_permissions=None,
                                                  most_dangerous_permissions=None)
 
-    current_access_token = access_tokens_collection.find_one({"api_key": api_key, "secret_key": secret_key})
+    current_access_token = DatabaseConnection.get_access_tokens_collection().find_one({"api_key": api_key, "secret_key": secret_key})
 
     all_permissions.format_data_array(list(str(permissions).split(",")))
     input_features = tf.constant([all_permissions.train_data], dtype=tf.int32)
@@ -74,9 +73,9 @@ async def add_package_permission(
         is_malware=is_package_malware,
         access_token_id=str(current_access_token['_id'])
     )
-    _id = package_permissions_collection.insert_one(dict(package_permission_model))
+    _id = DatabaseConnection.get_package_permissions_collection().insert_one(dict(package_permission_model))
     package_permission_details = all_package_permissions_serializer(
-        package_permissions_collection.find({"_id": _id.inserted_id}))
+        DatabaseConnection.get_package_permissions_collection().find({"_id": _id.inserted_id}))
 
     permissions_request = list(str(permissions).split(","))
 
