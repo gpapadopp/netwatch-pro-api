@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from routes.package_permissions_routes import package_permission
 from routes.package_apks_routes import package_apk
 from routes.internet_packages_routes import internet_package
@@ -11,6 +12,14 @@ from config.db import DatabaseConnection
 DatabaseConnection.initializeConnection()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust this to your needs
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],  # Adjust this to your needs
+    allow_headers=["*"],  # Adjust this to your needs
+)
 
 app.include_router(package_permission)
 app.include_router(package_apk)
