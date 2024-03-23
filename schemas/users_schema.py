@@ -8,7 +8,7 @@ def users_serializer(user) -> dict:
         'last_name': str(user['last_name']),
         'email': str(user['email']),
         'disabled': bool(user['disabled']),
-        'created_at': str(user['created_at'])
+        'created_at': user['created_at']
     }
 
 

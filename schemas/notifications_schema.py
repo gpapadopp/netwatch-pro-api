@@ -6,7 +6,7 @@ def notifications_serializer(notification) -> dict:
         'context': str(notification['context']),
         'banner': str(notification['banner']),
         'disabled': bool(notification['disabled']),
-        'created_at': str(notification['created_at'])
+        'created_at': notification['created_at']
     }
 
 

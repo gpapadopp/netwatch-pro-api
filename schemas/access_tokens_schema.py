@@ -9,7 +9,7 @@ def access_tokens_serializer(access_token) -> dict:
         'secret_key': str(access_token['secret_key']),
         'active_until': str(access_token['active_until']),
         'access_models': list(access_token['access_models']),
-        'created_at': str(access_token['created_at'])
+        'created_at': access_token['created_at']
     }
 
 
