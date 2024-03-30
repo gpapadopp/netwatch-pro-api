@@ -130,7 +130,8 @@ async def get_specific_blog_post(
         blog_post_id,
 ):
     try:
-        blog_post_details_db = all_blog_posts_serializer(DatabaseConnection.get_blog_posts_collection().find({"_id": ObjectId(blog_post_id)}))
+        blog_post_details_db = all_blog_posts_serializer(
+            DatabaseConnection.get_blog_posts_collection().find({"_id": ObjectId(blog_post_id)}))
 
         if blog_post_details_db is None:
             return BlogPostsResponseView(success=False, message="Blog Post does NOT exists", blog_post=None)
@@ -156,7 +157,10 @@ async def get_specific_blog_post(
     except Exception as ex:
         return BlogPostsResponseView(success=False, message="Blog Post does NOT exists", blog_post=None)
 
-@blog_post_api.get("/v1/blog-posts/get-banner/{blog_post_id}", status_code=200, tags=['Blog Posts'], summary="Get the Blog Post's Banner", description="Get the Blog Post's Banner File", response_class=FileResponse)
+
+@blog_post_api.get("/v1/blog-posts/get-banner/{blog_post_id}", status_code=200, tags=['Blog Posts'],
+                   summary="Get the Blog Post's Banner", description="Get the Blog Post's Banner File",
+                   response_class=FileResponse)
 async def get_specific_notification_banner(blog_post_id):
     try:
         blog_post_object_id = ObjectId(blog_post_id)
@@ -176,13 +180,16 @@ async def get_specific_notification_banner(blog_post_id):
             "message": "Notification does NOT exists"
         }
 
-@blog_post_api.post("/v1/blog-posts/{blog_post_id}", status_code=200, tags=['Blog Posts'], summary="Update Specific Blog Post", description="Update Specific Blog Post - By ID", response_model=BlogPostsResponseUpdate)
+
+@blog_post_api.post("/v1/blog-posts/{blog_post_id}", status_code=200, tags=['Blog Posts'],
+                    summary="Update Specific Blog Post", description="Update Specific Blog Post - By ID",
+                    response_model=BlogPostsResponseUpdate)
 async def update_specific_blog_post(
-    blog_post_id,
-    post_content: Annotated[str, Form()],
-    post_title: Annotated[str, Form()],
-    disabled: Annotated[bool, Form()],
-    authorization: str = Header(..., description="Bearer Token")
+        blog_post_id,
+        post_content: Annotated[str, Form()],
+        post_title: Annotated[str, Form()],
+        disabled: Annotated[bool, Form()],
+        authorization: str = Header(..., description="Bearer Token")
 ):
     if not utils.users_auth.check_login_token(authorization):
         return BlogPostsResponseUpdate(success=False, message="unauthorized")
@@ -198,18 +205,21 @@ async def update_specific_blog_post(
         existing_blog_post['post_title'] = post_title
         existing_blog_post['disabled'] = disabled
 
-        DatabaseConnection.get_blog_posts_collection().update_one({"_id": blog_post_object_id}, {"$set": existing_blog_post})
+        DatabaseConnection.get_blog_posts_collection().update_one({"_id": blog_post_object_id},
+                                                                  {"$set": existing_blog_post})
 
         return BlogPostsResponseUpdate(success=True, message="Blog Post Updated Successfully")
     except Exception as ex:
         return BlogPostsResponseUpdate(success=False, message="There was an error during blog post update")
 
 
-@blog_post_api.post("/v1/blog-posts/change-banner/{blog_post_id}", status_code=200, tags=['Blog Posts'], summary="Update Specific Blog Post Banner", description="Update Specific Blog Post Banner - By ID", response_model=BlogPostsResponseUpdate)
-async def update_specific_blog_post(
-    blog_post_id,
-    post_banner: UploadFile = File(...),
-    authorization: str = Header(..., description="Bearer Token")
+@blog_post_api.post("/v1/blog-posts/change-banner/{blog_post_id}", status_code=200, tags=['Blog Posts'],
+                    summary="Update Specific Blog Post Banner", description="Update Specific Blog Post Banner - By ID",
+                    response_model=BlogPostsResponseUpdate)
+async def update_specific_blog_post_banner(
+        blog_post_id,
+        post_banner: UploadFile = File(...),
+        authorization: str = Header(..., description="Bearer Token")
 ):
     if not utils.users_auth.check_login_token(authorization):
         return BlogPostsResponseUpdate(success=False, message="unauthorized")
@@ -229,17 +239,20 @@ async def update_specific_blog_post(
             file_object.write(post_banner.file.read())
 
         existing_blog_post['post_banner'] = file_unique_name
-        DatabaseConnection.get_blog_posts_collection().update_one({"_id": blog_post_object_id}, {"$set": existing_blog_post})
+        DatabaseConnection.get_blog_posts_collection().update_one({"_id": blog_post_object_id},
+                                                                  {"$set": existing_blog_post})
 
         return BlogPostsResponseUpdate(success=True, message="Blog Post Updated Successfully")
     except Exception as ex:
         return BlogPostsResponseUpdate(success=False, message="There was an error during blog post update")
 
 
-@blog_post_api.delete("/v1/blog-posts/{blog_post_id}", status_code=200, tags=['Blog Posts'], summary="Delete Specific Blog Post", description="Delete Specific Blog Post - By ID", response_model=BlogPostsResponseDelete)
+@blog_post_api.delete("/v1/blog-posts/{blog_post_id}", status_code=200, tags=['Blog Posts'],
+                      summary="Delete Specific Blog Post", description="Delete Specific Blog Post - By ID",
+                      response_model=BlogPostsResponseDelete)
 async def delete_specific_blog_post(
-    blog_post_id,
-    authorization: str = Header(..., description="Bearer Token")
+        blog_post_id,
+        authorization: str = Header(..., description="Bearer Token")
 ):
     if not utils.users_auth.check_login_token(authorization):
         return BlogPostsResponseDelete(success=False, message="unauthorized")

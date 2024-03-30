@@ -7,6 +7,7 @@ from routes.notifications_routes import notification_api
 from routes.access_tokens_routes import access_token_api
 from routes.users_routes import users_api
 from routes.blog_posts_routes import blog_post_api
+from routes.malicious_files_signatures_routes import malicious_files_signatures_api
 from config.db import DatabaseConnection
 
 DatabaseConnection.initializeConnection()
@@ -28,3 +29,4 @@ app.include_router(notification_api)
 app.include_router(access_token_api)
 app.include_router(users_api)
 app.include_router(blog_post_api)
+app.include_router(malicious_files_signatures_api)

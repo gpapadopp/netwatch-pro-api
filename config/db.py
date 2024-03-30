@@ -9,6 +9,7 @@ class DatabaseConnection:
     access_tokens_collection = None
     users_collection = None
     blog_posts_collection = None
+    malicious_files_signatures = None
 
     @staticmethod
     def initializeConnection():
@@ -21,6 +22,7 @@ class DatabaseConnection:
         DatabaseConnection.access_tokens_collection = db['access_tokens']
         DatabaseConnection.users_collection = db['users']
         DatabaseConnection.blog_posts_collection = db['blog_posts']
+        DatabaseConnection.malicious_files_signatures = db['malicious_files_signatures']
 
     @staticmethod
     def get_package_permissions_collection():
@@ -50,7 +52,6 @@ class DatabaseConnection:
     def get_blog_posts_collection():
         return DatabaseConnection.blog_posts_collection
 
-
-# Usage
-DatabaseConnection.initializeConnection()
-permissions_collection = DatabaseConnection.get_package_permissions_collection()
+    @staticmethod
+    def get_malicious_files_signatures_collection():
+        return DatabaseConnection.malicious_files_signatures
