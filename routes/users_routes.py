@@ -84,6 +84,41 @@ async def login_user(
     return UsersResponseLogin(success=True, message=None, authentication=authentication_response)
 
 
+@users_api.post("/v1/users/login-email", status_code=200, tags=['Users'], summary="Login User - Email", description="Authenticate a user by their email address", response_model=UsersResponseLogin)
+async def login_user(
+    email: str = Form(...),
+    password: str = Form(...),
+):
+    existing_user = DatabaseConnection.get_users_collection().find_one({"email": email})
+    if existing_user is None:
+        return UsersResponseLogin(success=False, message="Wrong username/password", authentication=None)
+
+    if not pwd_context.verify(password, existing_user["password"]):
+        return UsersResponseLogin(success=False, message="Wrong username/password", authentication=None)
+
+    expiration_date = datetime.now() + timedelta(minutes=utils.globals.ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    created_at_iso = existing_user['created_at'].isoformat()
+    issue_time_iso = datetime.now().isoformat()
+    expiration_date_iso = expiration_date.isoformat()
+
+    data_to_encode = {
+        "username": existing_user['username'],
+        "first_name": existing_user['first_name'],
+        "last_name": existing_user['last_name'],
+        "email": existing_user['email'],
+        "disabled": existing_user['disabled'],
+        "created_at": created_at_iso,
+        "issue_time": issue_time_iso,
+        "expiration": expiration_date_iso
+    }
+    encoded_jwt = jwt.encode(data_to_encode, utils.globals.SECRET_KEY, algorithm=utils.globals.ALGORITHM)
+
+    authentication_response = AuthenticationResponse(token=encoded_jwt, type="bearer")
+
+    return UsersResponseLogin(success=True, message=None, authentication=authentication_response)
+
+
 @users_api.get("/v1/users/", status_code=200, tags=['Users'], summary="Get All Users", description="Get All Users with Pagination", response_model=UsersResponseIndex)
 async def get_all_users(
         page: int = Query(..., description="Page number starting from 0"),
