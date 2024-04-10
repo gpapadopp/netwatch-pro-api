@@ -100,6 +100,7 @@ async def update_specific_access_token(
     access_token_id,
     issuer: Annotated[str, Form()],
     purpose: Annotated[str, Form()],
+    disabled: Annotated[bool, Form()],
     access_models: Annotated[str, Form()],
     authorization: str = Header(..., description="Bearer Token")
 ):
@@ -115,6 +116,7 @@ async def update_specific_access_token(
 
         existing_access_token['issuer'] = issuer
         existing_access_token['purpose'] = purpose
+        existing_access_token['disabled'] = disabled
         access_model_split_list = access_models.split(",")
         access_models = []
         for access_model in access_model_split_list:
