@@ -80,7 +80,7 @@ async def add_blog_post(
 @blog_post_api.get("/v1/blog-posts/", status_code=200, tags=['Blog Posts'], summary="Get All Blog Post",
                    description="Get All Blog Post", response_model=BlogPostsResponseIndex)
 async def get_all_blog_posts(
-        page: int = Query(..., description="Page number starting from 0"),
+        page: int = Query(..., description="Page number starting from 1"),
         limit: int = Query(..., description="Number of items per page"),
 ):
     blog_posts_details_db = all_blog_posts_serializer(

@@ -54,7 +54,7 @@ async def add_access_token(
 
 @access_token_api.get("/v1/access-tokens/", status_code=200, tags=['Access Tokens'], summary="Get Access Tokens", description="Endpoint to get all access tokens", response_model=AccessTokensResponseIndex)
 async def get_all_access_token(
-    page: int = Query(..., description="Page number starting from 0"),
+    page: int = Query(..., description="Page number starting from 1"),
     limit: int = Query(..., description="Number of items per page"),
     authorization: str = Header(..., description="Bearer Token")
 ):

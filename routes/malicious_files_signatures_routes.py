@@ -103,7 +103,7 @@ async def add_malicious_file_signature_csv(
 @malicious_files_signatures_api.get("/v1/malicious-files-signatures/with-pagination", status_code=200, tags=['Malicious Files Signatures'], summary="Get All Malicious Files Signatures - With Pagination",
                    description="Get All Malicious Files Signatures - With Pagination", response_model=MaliciousFilesSignaturesResponseIndexWithPagination)
 async def get_all_malicious_files_signatures(
-        page: int = Query(..., description="Page number starting from 0"),
+        page: int = Query(..., description="Page number starting from 1"),
         limit: int = Query(..., description="Number of items per page"),
 ):
     malicious_files_signatures_details_db = all_malicious_files_signatures_serializer(

@@ -121,7 +121,7 @@ async def login_user(
 
 @users_api.get("/v1/users/", status_code=200, tags=['Users'], summary="Get All Users", description="Get All Users with Pagination", response_model=UsersResponseIndex)
 async def get_all_users(
-        page: int = Query(..., description="Page number starting from 0"),
+        page: int = Query(..., description="Page number starting from 1"),
         limit: int = Query(..., description="Number of items per page"),
         authorization: str = Header(..., description="Bearer Token"),
 ):

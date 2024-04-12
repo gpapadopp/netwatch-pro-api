@@ -57,7 +57,7 @@ async def get_all_notifications():
 
 @notification_api.get("/v1/notifications/with-pagination", status_code=200, tags=['Notifications'], summary="Get All Notifications with Pagination", description="Get All Notifications with Pagination", response_model=NotificationsResponseIndexWithPagination)
 async def get_all_notifications_with_pagination(
-    page: int = Query(..., description="Page number starting from 0"),
+    page: int = Query(..., description="Page number starting from 1"),
     limit: int = Query(..., description="Number of items per page"),
 ):
     notification_details_db = all_notifications_serializer(DatabaseConnection.get_notifications_collection().find({}))
