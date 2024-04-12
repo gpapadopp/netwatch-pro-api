@@ -36,16 +36,16 @@ async def add_internet_package(
         secret_key: Optional[str] = Form(None),
 ):
     if (api_key is None and secret_key is None) and authorization is None:
-        return InternetPackagesResponseAdd(success=False, message="unauthorized1", internet_package=None)
+        return InternetPackagesResponseAdd(success=False, message="unauthorized", internet_package=None)
 
     if authorization is not None:
         if not utils.users_auth.check_login_token(authorization):
-            return InternetPackagesResponseAdd(success=False, message="unauthorized2", internet_package=None)
+            return InternetPackagesResponseAdd(success=False, message="unauthorized", internet_package=None)
 
     if api_key is not None and secret_key is not None:
         if not permission_access_checker.check_model_permission(AccessModelsEnum.InternetPackagesModel, api_key,
                                                                 secret_key):
-            return InternetPackagesResponseAdd(success=False, message="unauthorized3", internet_package=None)
+            return InternetPackagesResponseAdd(success=False, message="unauthorized", internet_package=None)
 
     if not api_key is None and not secret_key is None:
         current_access_token = DatabaseConnection.get_access_tokens_collection().find_one(
