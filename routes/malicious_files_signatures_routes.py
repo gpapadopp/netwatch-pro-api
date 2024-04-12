@@ -174,11 +174,6 @@ async def update_specific_malicious_file_signature(
         return MaliciousFilesSignaturesResponseEdit(success=False, message="unauthorized")
 
     try:
-        malicious_file_signature_exists = DatabaseConnection.get_malicious_files_signatures_collection().find_one(
-            {"file_signature": file_signature})
-        if malicious_file_signature_exists:
-            return MaliciousFilesSignaturesResponseEdit(success=False, message="Malicious File Signature already exists")
-
         malicious_file_signatures_object_id = ObjectId(malicious_file_signature_id)
         existing_malicious_files_signatures = DatabaseConnection.get_malicious_files_signatures_collection().find_one({"_id": malicious_file_signatures_object_id})
 
