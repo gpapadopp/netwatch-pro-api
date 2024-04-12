@@ -23,24 +23,35 @@ permission_access_checker = PermissionChecker()
                        summary="Add Internet Package", description="Add an Internet Package",
                        response_model=InternetPackagesResponseAdd)
 async def add_internet_package(
-    device_token: Annotated[str, Form()],
-    source_ip: Annotated[str, Form()],
-    destination_ip: Annotated[str, Form()],
-    source_mac_address: Annotated[str, Form()],
-    destination_mac_address: Annotated[str, Form()],
-    header_type: Annotated[str, Form()],
-    raw_header: Annotated[str, Form()],
-    raw_payload: Annotated[str, Form()],
-    api_key: Optional[str] = Form(None),
-    secret_key: Optional[str] = Form(None),
+        device_token: Annotated[str, Form()],
+        source_ip: Annotated[str, Form()],
+        destination_ip: Annotated[str, Form()],
+        source_mac_address: Annotated[str, Form()],
+        destination_mac_address: Annotated[str, Form()],
+        header_type: Annotated[str, Form()],
+        raw_header: Annotated[str, Form()],
+        raw_payload: Annotated[str, Form()],
+        authorization: Optional[str] = Header(None),
+        api_key: Optional[str] = Form(None),
+        secret_key: Optional[str] = Form(None),
 ):
-    if api_key is None or secret_key is None:
+    if (api_key is None and secret_key is None) and authorization is None:
         return InternetPackagesResponseAdd(success=False, message="unauthorized1", internet_package=None)
 
-    if not permission_access_checker.check_model_permission(AccessModelsEnum.InternetPackagesModel, api_key, secret_key):
-        return InternetPackagesResponseAdd(success=False, message="unauthorized2", internet_package=None)
+    if authorization is not None:
+        if not utils.users_auth.check_login_token(authorization):
+            return InternetPackagesResponseAdd(success=False, message="unauthorized2", internet_package=None)
 
-    current_access_token = DatabaseConnection.get_access_tokens_collection().find_one({"api_key": api_key, "secret_key": secret_key})
+    if api_key is not None and secret_key is not None:
+        if not permission_access_checker.check_model_permission(AccessModelsEnum.InternetPackagesModel, api_key,
+                                                                secret_key):
+            return InternetPackagesResponseAdd(success=False, message="unauthorized3", internet_package=None)
+
+    if not api_key is None and not secret_key is None:
+        current_access_token = DatabaseConnection.get_access_tokens_collection().find_one(
+            {"api_key": api_key, "secret_key": secret_key})
+    else:
+        current_access_token = DatabaseConnection.get_access_tokens_collection().find_one({}, sort=[("_id", -1)])
 
     internet_package_model = InternetPackages(
         device_token=device_token,
@@ -142,8 +153,8 @@ async def get_all_internet_packages(
 
 
 @internet_package.get("/v1/internet-packages/{internet_package_id}", status_code=200, tags=['Internet Packages'],
-                   summary="Get Specific Internet Package", description="Get Specific Internet Package - By ID",
-                   response_model=InternetPackagesResponseView)
+                      summary="Get Specific Internet Package", description="Get Specific Internet Package - By ID",
+                      response_model=InternetPackagesResponseView)
 async def get_specific_internet_package(
         internet_package_id,
 ):
@@ -152,7 +163,8 @@ async def get_specific_internet_package(
             DatabaseConnection.get_internet_packages_collection().find({"_id": ObjectId(internet_package_id)}))
 
         if internet_packages_details_db is None:
-            return InternetPackagesResponseView(success=False, message="Internet Package does NOT exists", internet_package=None)
+            return InternetPackagesResponseView(success=False, message="Internet Package does NOT exists",
+                                                internet_package=None)
 
         access_token_details = DatabaseConnection.get_access_tokens_collection().find_one(
             {"_id": ObjectId(internet_packages_details_db[0]["access_token_id"])})
@@ -180,14 +192,17 @@ async def get_specific_internet_package(
             )
         )
 
-        return InternetPackagesResponseView(success=True, message=None, internet_package=single_internet_package_response)
+        return InternetPackagesResponseView(success=True, message=None,
+                                            internet_package=single_internet_package_response)
     except Exception as ex:
-        return InternetPackagesResponseView(success=False, message="Internet Package does NOT exists", internet_package=None)
+        return InternetPackagesResponseView(success=False, message="Internet Package does NOT exists",
+                                            internet_package=None)
 
 
 @internet_package.post("/v1/internet-packages/{internet_package_id}", status_code=200, tags=['Internet Packages'],
-                    summary="Update Specific Internet Package", description="Update Specific Internet Package - By ID",
-                    response_model=InternetPackagesResponseUpdate)
+                       summary="Update Specific Internet Package",
+                       description="Update Specific Internet Package - By ID",
+                       response_model=InternetPackagesResponseUpdate)
 async def update_specific_internet_package(
         internet_package_id,
         source_ip: Annotated[str, Form()],
@@ -204,7 +219,8 @@ async def update_specific_internet_package(
 
     try:
         internet_package_object_id = ObjectId(internet_package_id)
-        existing_internet_package = DatabaseConnection.get_internet_packages_collection().find_one({"_id": internet_package_object_id})
+        existing_internet_package = DatabaseConnection.get_internet_packages_collection().find_one(
+            {"_id": internet_package_object_id})
 
         if existing_internet_package is None:
             return InternetPackagesResponseUpdate(success=False, message="Internet Package not exists")
@@ -218,16 +234,18 @@ async def update_specific_internet_package(
         existing_internet_package['raw_payload'] = raw_payload
 
         DatabaseConnection.get_internet_packages_collection().update_one({"_id": internet_package_object_id},
-                                                                  {"$set": existing_internet_package})
+                                                                         {"$set": existing_internet_package})
 
         return InternetPackagesResponseUpdate(success=True, message="Internet Package Updated Successfully")
     except Exception as ex:
-        return InternetPackagesResponseUpdate(success=False, message="There was an error during internet package update")
+        return InternetPackagesResponseUpdate(success=False,
+                                              message="There was an error during internet package update")
 
 
 @internet_package.delete("/v1/internet-packages/{internet_package_id}", status_code=200, tags=['Internet Packages'],
-                      summary="Delete Specific Internet Package", description="Delete Specific Internet Package - By ID",
-                      response_model=InternetPackagesResponseDelete)
+                         summary="Delete Specific Internet Package",
+                         description="Delete Specific Internet Package - By ID",
+                         response_model=InternetPackagesResponseDelete)
 async def delete_specific_internet_package(
         internet_package_id,
         authorization: str = Header(..., description="Bearer Token")
@@ -241,4 +259,5 @@ async def delete_specific_internet_package(
 
         return InternetPackagesResponseDelete(success=True, message="Internet Package Deleted Successfully")
     except Exception as ex:
-        return InternetPackagesResponseDelete(success=False, message="There was an error during internet package deletion")
+        return InternetPackagesResponseDelete(success=False,
+                                              message="There was an error during internet package deletion")
