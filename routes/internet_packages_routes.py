@@ -102,7 +102,11 @@ async def add_internet_package(
 async def get_all_internet_packages(
         page: int = Query(..., description="Page number starting from 1"),
         limit: int = Query(..., description="Number of items per page"),
+        authorization: str = Header(..., description="Bearer Token")
 ):
+    if not utils.users_auth.check_login_token(authorization):
+        return InternetPackagesResponseIndex(success=False, message="unauthorized", current_page=0, current_results=0, total_results=0, all_internet_packages=None)
+
     internet_packages_details_db = all_internet_packages_serializer(
         DatabaseConnection.get_internet_packages_collection().find({}).sort("created_at", -1))
 
@@ -157,8 +161,12 @@ async def get_all_internet_packages(
                       response_model=InternetPackagesResponseView)
 async def get_specific_internet_package(
         internet_package_id,
+        authorization: str = Header(..., description="Bearer Token")
 ):
     try:
+        if not utils.users_auth.check_login_token(authorization):
+            return InternetPackagesResponseView(success=False, message="unauthorized", internet_package=None)
+
         internet_packages_details_db = all_internet_packages_serializer(
             DatabaseConnection.get_internet_packages_collection().find({"_id": ObjectId(internet_package_id)}))
 

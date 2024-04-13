@@ -105,7 +105,11 @@ async def add_malicious_file_signature_csv(
 async def get_all_malicious_files_signatures(
         page: int = Query(..., description="Page number starting from 1"),
         limit: int = Query(..., description="Number of items per page"),
+        authorization: str = Header(..., description="Bearer Token")
 ):
+    if not utils.users_auth.check_login_token(authorization):
+        return MaliciousFilesSignaturesResponseIndexWithPagination(success=False, message="unauthorized", current_page=0, current_results=0, total_results=0, malicious_file_signatures=None)
+
     malicious_files_signatures_details_db = all_malicious_files_signatures_serializer(
         DatabaseConnection.get_malicious_files_signatures_collection().find({}).sort("created_at", -1))
 
@@ -142,8 +146,13 @@ async def get_all_malicious_files_signatures(
                    response_model=MaliciousFilesSignaturesResponseView)
 async def get_specific_malicious_files_signatures(
         malicious_file_signature_id,
+        authorization: str = Header(..., description="Bearer Token")
 ):
     try:
+        if not utils.users_auth.check_login_token(authorization):
+            return MaliciousFilesSignaturesResponseView(success=False, message="unauthorized",
+                                                                       malicious_file_signature=None)
+
         malicious_files_signatures_details_db = all_malicious_files_signatures_serializer(DatabaseConnection.get_malicious_files_signatures_collection().find({"_id": ObjectId(malicious_file_signature_id)}))
 
         if malicious_files_signatures_details_db is None:
