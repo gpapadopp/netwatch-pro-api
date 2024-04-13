@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 from response_models.internet_package import InternetPackagesResponseModel
 
@@ -15,7 +15,7 @@ class InternetPackagesResponseIndex(BaseModel):
     current_page: int
     current_results: int
     total_results: int
-    all_internet_packages: Optional[list[InternetPackagesResponseModel]]
+    all_internet_packages: Optional[List[InternetPackagesResponseModel]]
 
 
 class InternetPackagesResponseView(BaseModel):

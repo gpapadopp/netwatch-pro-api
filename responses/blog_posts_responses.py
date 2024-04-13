@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from response_models.blog_post import BlogPostResponseModel
-from typing import Optional
+from typing import Optional, List
 
 
 class BlogPostsResponseAdd(BaseModel):
@@ -15,7 +15,7 @@ class BlogPostsResponseIndex(BaseModel):
     current_page: int
     current_results: int
     total_results: int
-    all_blog_posts: Optional[list[BlogPostResponseModel]]
+    all_blog_posts: Optional[List[BlogPostResponseModel]]
 
 
 class BlogPostsResponseView(BaseModel):

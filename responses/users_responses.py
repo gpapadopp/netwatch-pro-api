@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from responses.authentication_responses import AuthenticationResponse
 from response_models.user import UsersResponseModel
-from typing import Optional
+from typing import Optional, List
 
 
 class UsersResponseAdd(BaseModel):
@@ -22,7 +22,7 @@ class UsersResponseIndex(BaseModel):
     current_page: int
     current_results: int
     total_results: int
-    all_users: Optional[list[UsersResponseModel]]
+    all_users: Optional[List[UsersResponseModel]]
 
 
 class UsersResponseView(BaseModel):
