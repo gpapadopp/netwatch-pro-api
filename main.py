@@ -21,7 +21,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],  # Adjust this to your needs
     allow_headers=["*"],  # Adjust this to your needs
 )
-
+#.
 app.include_router(package_permission)
 app.include_router(package_apk)
 app.include_router(internet_package)
